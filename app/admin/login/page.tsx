@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: 'Studio sign in', robots: { index: fa
 
 export default async function AdminLogin() {
   const user = await getUser();
-  if (user && isAdminEmail(user.email)) redirect('/admin/galleries');
+  if (user && isAdminEmail(user.email)) redirect('/admin');
   const ready = Boolean(process.env.GOOGLE_CLIENT_ID);
 
   return (
@@ -28,7 +28,7 @@ export default async function AdminLogin() {
           <p style={{ margin: 0, color: 'var(--muted)' }}>Sign in to the Tboss Studio admin.</p>
           {user && <div role="alert" className="alert">{user.email} isn’t on the studio team. Sign in with a studio Google account, or ask the owner to add you.</div>}
           {ready
-            ? <a href="/api/auth/google?next=/admin/galleries" className="btn" style={{ border: '1px solid rgba(31,26,22,0.2)', background: '#fff' }}><PersonIcon />Continue with Google</a>
+            ? <a href="/api/auth/google?next=/admin" className="btn" style={{ border: '1px solid rgba(31,26,22,0.2)', background: '#fff' }}><PersonIcon />Continue with Google</a>
             : <p className="alert">Google sign-in isn’t connected yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Hostinger.</p>}
           {user && <a href="/api/auth/logout?next=/admin/login" style={{ fontSize: 14, color: 'var(--muted)' }}>Use a different account</a>}
           <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>Only team members can sign in. Email and password sign-in for the team arrives with the full admin.</p>

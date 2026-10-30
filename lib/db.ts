@@ -84,6 +84,114 @@ const schema = [
     KEY by_gallery (gallery_id),
     KEY by_photo (photo_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // ---- Phase 3: studio admin ----
+  `CREATE TABLE IF NOT EXISTS settings (
+    k VARCHAR(60) PRIMARY KEY,
+    v MEDIUMTEXT NOT NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(160) NOT NULL,
+    email VARCHAR(200) NULL,
+    phone VARCHAR(40) NULL,
+    instagram VARCHAR(80) NULL,
+    source ENUM('website','imported','manual') NOT NULL DEFAULT 'manual',
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_email (email)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS enquiries (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(160) NOT NULL,
+    email VARCHAR(200) NOT NULL,
+    phone VARCHAR(40) NULL,
+    session_type VARCHAR(40) NULL,
+    wanted_date VARCHAR(20) NULL,
+    location VARCHAR(160) NULL,
+    found_via VARCHAR(40) NULL,
+    message TEXT NULL,
+    status ENUM('new','replied','converted','archived') NOT NULL DEFAULT 'new',
+    client_id INT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL,
+    title VARCHAR(160) NOT NULL,
+    package_name VARCHAR(160) NULL,
+    gallery_id INT NULL,
+    delivered_at DATETIME NULL,
+    cancelled_at DATETIME NULL,
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_client (client_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL UNIQUE,
+    number VARCHAR(20) NOT NULL,
+    token VARCHAR(40) NOT NULL UNIQUE,
+    version INT NOT NULL DEFAULT 1,
+    items MEDIUMTEXT NOT NULL,
+    discount BIGINT NOT NULL DEFAULT 0,
+    total BIGINT NOT NULL DEFAULT 0,
+    deposit BIGINT NOT NULL DEFAULT 0,
+    due_date DATE NULL,
+    note TEXT NULL,
+    sent_at DATETIME NULL,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS invoice_versions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    invoice_id INT NOT NULL,
+    version INT NOT NULL,
+    items MEDIUMTEXT NOT NULL,
+    total BIGINT NOT NULL,
+    sent TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_invoice (invoice_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    amount BIGINT NOT NULL,
+    method VARCHAR(40) NOT NULL,
+    paid_on DATE NOT NULL,
+    reference VARCHAR(120) NULL,
+    note VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_order (order_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS bookings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL UNIQUE,
+    token VARCHAR(40) NOT NULL UNIQUE,
+    session_date DATE NOT NULL,
+    session_time VARCHAR(5) NOT NULL,
+    duration_min INT NOT NULL DEFAULT 120,
+    place ENUM('studio','location') NOT NULL DEFAULT 'studio',
+    address VARCHAR(255) NOT NULL,
+    notes TEXT NULL,
+    confirmed_at DATETIME NULL,
+    change_request TEXT NULL,
+    change_requested_at DATETIME NULL,
+    reminder_sent_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY by_date (session_date)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS order_events (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    text VARCHAR(400) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_order (order_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+];
+
+// Changes to tables that already exist on the live site. Each runs once; "already there" is ignored.
+const changes = [
+  'ALTER TABLE galleries ADD COLUMN order_id INT NULL',
 ];
 
 async function ready() {
@@ -91,6 +199,9 @@ async function ready() {
     g.__tbossReady = (async () => {
       const p = pool();
       for (const sql of schema) await p.query(sql);
+      for (const sql of changes) {
+        try { await p.query(sql); } catch (e) { if ((e as { code?: string }).code !== 'ER_DUP_FIELDNAME') throw e; }
+      }
     })().catch((e) => {
       g.__tbossReady = undefined;
       throw e;

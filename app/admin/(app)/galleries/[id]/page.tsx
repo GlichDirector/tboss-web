@@ -7,6 +7,7 @@ import { updateGalleryAction } from '@/app/admin/actions';
 import { siteOrigin } from '@/lib/auth';
 import { downloadsReport, favouriteCounts, getGallery, listPhotos, selectionsReport } from '@/lib/galleries';
 import { formatDate } from '@/lib/content';
+import { orderIdForGallery } from '@/lib/studio';
 
 const tabs = [
   ['unedited', 'Unedited'], ['edited', 'Edited'], ['selections', 'Selections'], ['downloads', 'Downloads'], ['settings', 'Details'],
@@ -21,13 +22,14 @@ export default async function ManageGallery({ params, searchParams }: { params: 
 
   const [unedited, edited, counts] = await Promise.all([listPhotos(id, 'unedited'), listPhotos(id, 'edited'), favouriteCounts(id)]);
   const link = `${siteOrigin()}/g/${g.slug}?k=${g.access_key}`;
+  const orderId = await orderIdForGallery(id);
   const folderPhotos = tab === 'edited' ? edited : unedited;
 
   return (
     <>
       <div className="a-head">
         <div>
-          <p className="a-kicker"><Link href="/admin/galleries">Client galleries</Link> /</p>
+          <p className="a-kicker"><Link href="/admin/galleries">Client galleries</Link> /{orderId && <> <Link href={`/admin/orders/${orderId}`}>Back to the order</Link></>}</p>
           <h1>{g.client_name} · {g.title}</h1>
           <div className="a-sub" style={{ marginTop: 4 }}>
             <span className={`a-badge a-${g.stage}`}>{stageLabel[g.stage]}</span>{' '}

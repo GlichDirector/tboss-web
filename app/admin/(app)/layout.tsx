@@ -4,11 +4,12 @@ import { redirect } from 'next/navigation';
 import { getAdmin } from '@/lib/auth';
 import { dbHealth } from '@/lib/db';
 import { storageConfigured } from '@/lib/storage';
+import { countNewEnquiries } from '@/lib/studio';
+import AdminNav from '@/components/admin/AdminNav';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Studio', robots: { index: false, follow: false } };
 
-const soon = ['Dashboard', 'Calendar', 'Clients', 'Enquiries', 'Orders & bookings', 'Payments & invoices', 'Pages & design', 'Journal', 'Emails', 'Settings'];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getAdmin();
@@ -18,11 +19,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="a-shell">
       <aside className="a-side">
-        <Link href="/admin/galleries" aria-label="Studio home"><img src="/brand/logo-brown.png" alt="Tboss Photography" width={64} height={44} /></Link>
-        <nav aria-label="Studio" className="a-nav">
-          <Link href="/admin/galleries" aria-current="page">Client galleries</Link>
-          {soon.map((s) => <span key={s} title="Arrives in Phase 3" className="a-soon">{s}</span>)}
-        </nav>
+        <Link href="/admin" aria-label="Studio home"><img src="/brand/logo-brown.png" alt="Tboss Photography" width={64} height={44} /></Link>
+        <AdminNav newEnquiries={db.ok ? await countNewEnquiries() : 0} />
         <div className="a-me">
           <span>{user.name}</span>
           <a href="/api/auth/logout?next=/admin/login">Sign out</a>

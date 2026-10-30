@@ -1,6 +1,8 @@
 'use server';
 
 import { studio } from './site';
+import { dbConfigured } from './db';
+import { saveEnquiry } from './studio';
 
 export type FormState = { ok: boolean; error?: string; firstName?: string; email?: string; type?: string };
 
@@ -55,13 +57,24 @@ export async function sendEnquiry(_prev: FormState, form: FormData): Promise<For
     .map(([k, v]) => `<tr><td style="padding:6px 12px 6px 0;color:#625850;vertical-align:top">${k}</td><td style="padding:6px 0">${escapeHtml(v).replace(/\n/g, '<br>')}</td></tr>`)
     .join('');
 
+  // Keep every enquiry in the studio admin (Enquiries), even if email isn't connected.
+  let stored = false;
+  if (dbConfigured()) {
+    try {
+      await saveEnquiry({ name, email, phone: phone || null, session_type: type, wanted_date: date || null, location: location || null, found_via: source || null, message: message || null });
+      stored = true;
+    } catch (e) {
+      console.error('Could not save enquiry', e);
+    }
+  }
+
   const toStudio = await sendEmail(
     process.env.STUDIO_INBOX || studio.email,
     `New ${type.toLowerCase()} enquiry from ${name}`,
     `<div style="font-family:Arial,sans-serif;font-size:15px;color:#1F1A16"><h2 style="font-weight:600">New enquiry</h2><table>${table}</table></div>`,
     email,
   );
-  if (!toStudio) return { ok: false, error: 'Sorry, your enquiry didn’t send. Please try again, or call or WhatsApp us.' };
+  if (!toStudio && !stored) return { ok: false, error: 'Sorry, your enquiry didn’t send. Please try again, or call or WhatsApp us.' };
 
   const firstName = name.split(/\s+/)[0];
   await sendEmail(
