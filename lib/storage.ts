@@ -78,7 +78,7 @@ export async function removeKeys(keys: string[]) {
   await s3().send(new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: keys.map((Key) => ({ Key })) } }));
 }
 
-// Server-side save and read (Instagram copies and AI drafting). Small files only.
+// Server-side save and read (AI drafting reads photos with this). Small files only.
 export async function putObject(key: string, body: Buffer, contentType = 'image/jpeg') {
   if (local) {
     const fs = await import('node:fs/promises');

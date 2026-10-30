@@ -14,7 +14,7 @@ export default async function JournalAdmin() {
       <img src={mediaSrc(r.cover_key)} alt="" />
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
         <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {r.source === 'ai' && <span className="a-badge a-selection">AI draft from Instagram</span>}
+          {r.source === 'ai' && <span className="a-badge a-selection">AI draft</span>}
           <span className="a-badge">{r.category}</span>
         </span>
         <strong>{r.title}</strong>
@@ -26,7 +26,7 @@ export default async function JournalAdmin() {
     <>
       <div className="a-head">
         <div><p className="a-kicker">Website</p><h1>Journal</h1></div>
-        <div style={{ display: 'flex', gap: 8 }}><Link href="/admin/instagram" className="btn btn-outline a-sm">Draft from Instagram</Link><NewStoryButton /></div>
+        <div style={{ display: 'flex', gap: 8 }}><Link href="/admin/work" className="btn btn-outline a-sm">New post with AI article</Link><NewStoryButton /></div>
       </div>
       <h2 className="a-h2">Waiting for approval ({drafts.length})</h2>
       <p className="a-sub" style={{ margin: '0 0 12px' }}>Drafts are never shown on the website until you press Publish.</p>

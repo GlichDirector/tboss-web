@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Pic from '@/components/Pic';
 import Link from 'next/link';
 import StoryCard from '@/components/StoryCard';
 import SubscribeForm from '@/components/SubscribeForm';
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/journal' },
 };
 
-const cats = ['Portraits', 'Families', 'Events', 'Heritage', 'Guides & tips'] as const;
+const cats = ['Portraits', 'Events', 'Heritage', 'Guides & tips'] as const;
 
 export default async function JournalPage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const { c } = await searchParams;
@@ -49,7 +50,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Prom
         <>
           <section className="wrap" aria-label="Featured story" style={{ paddingTop: 24, paddingBottom: 72 }}>
             <Link href={`/journal/${featured.slug}`} style={{ display: 'flex', flexWrap: 'wrap', gap: 48, alignItems: 'center' }}>
-              <img src={featured.cover.src} alt={featured.cover.alt} style={{ flex: '1.3 1 520px', minWidth: 0, aspectRatio: '16 / 10', objectFit: 'cover', width: '100%' }} />
+              <Pic src={featured.cover.src} alt={featured.cover.alt} priority sizes="(max-width: 760px) 100vw, 60vw" style={{ flex: '1.3 1 520px', minWidth: 0, aspectRatio: '16 / 10', objectFit: 'cover', width: '100%' }} />
               <div style={{ flex: '1 1 340px', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <span className="eyebrow" style={{ letterSpacing: '0.2em' }}>Featured · {featured.category}</span>
                 <h2 className="serif" style={{ margin: 0, fontSize: 'clamp(34px, 4vw, 52px)', lineHeight: 1.08 }}>{featured.title}</h2>

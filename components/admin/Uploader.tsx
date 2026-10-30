@@ -68,8 +68,8 @@ export default function Uploader({ galleryId, folder }: { galleryId: number; fol
         const file = queue.shift()!;
         update(file.name, { status: 'working' });
         try {
-          const web = await resized(file, 2048, 0.86);
-          const thumb = await resized(file, 640, 0.8);
+          const web = await resized(file, 2560, 0.9);
+          const thumb = await resized(file, 1200, 0.85);
           const urls = await prepareUploadAction(galleryId, folder, file.name, file.type);
           await put(urls.thumb, thumb.blob, 'image/jpeg');
           await put(urls.web, web.blob, 'image/jpeg');

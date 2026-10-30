@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Pic from '@/components/Pic';
 import Link from 'next/link';
 import { getContent } from '@/lib/siteContent';
 import { studio } from '@/lib/site';
@@ -23,7 +24,7 @@ export default async function AboutPage() {
           {a.story && <p className="lede" style={{ fontSize: 19 }}>{a.story}</p>}
         </div>
         <div className="media" style={{ maxWidth: 560 }}>
-          <img src={a.image} alt="Oluwatosin Aremu, Tboss Photography" style={{ aspectRatio: '4 / 5' }} />
+          <Pic src={a.image} alt="Oluwatosin Aremu, Tboss Photography" style={{ aspectRatio: '4 / 5' }} priority sizes="(max-width: 760px) 100vw, 520px" />
         </div>
       </section>
 
@@ -58,13 +59,13 @@ export default async function AboutPage() {
       {a.showHeritage && <section className="band-dark" aria-labelledby="heritage-h">
         <div className="wrap split">
           <div className="media" style={{ flex: '1.3 1 520px' }}>
-            <img src={a.heritageImage} alt="Heritage portrait by Tboss Photography" style={{ aspectRatio: '16 / 10', objectPosition: 'center 20%' }} loading="lazy" />
+            <Pic src={a.heritageImage} alt="Heritage portrait by Tboss Photography" style={{ aspectRatio: '16 / 10', objectPosition: 'center 20%' }} sizes="(max-width: 760px) 100vw, 60vw" />
           </div>
           <div className="text">
             <p className="eyebrow">Giving back</p>
             <h2 className="h-section" id="heritage-h">The Heritage &amp; Legacy Project</h2>
             <p className="lede">{a.heritageText}</p>
-            <Link href="/work?c=Heritage" className="link-line">See the heritage portraits</Link>
+            <Link href="/work/heritage" className="link-line">See the heritage portraits</Link>
           </div>
         </div>
       </section>}

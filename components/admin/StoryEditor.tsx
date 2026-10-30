@@ -2,18 +2,12 @@
 
 import { useRef, useState, useTransition } from 'react';
 import { deleteStoryAction, saveStoryAction, type StoryForm } from '@/app/admin/journal-actions';
-import { siteImageUploadAction } from '@/app/admin/website-actions';
-import { putBlob, resizeImage } from './imageTools';
+import { uploadSiteImage } from './uploadSiteImage';
 
 type Block = { type: 'p' | 'h2' | 'quote'; text: string } | { type: 'image'; src: string; alt: string };
-const CATS = ['Portraits', 'Families', 'Events', 'Heritage', 'Guides & tips'];
+const CATS = ['Portraits', 'Events', 'Heritage', 'Guides & tips'];
 
-async function upload(file: File) {
-  const { blob } = await resizeImage(file, 2000);
-  const { url, publicUrl } = await siteImageUploadAction('journal');
-  await putBlob(url, blob);
-  return publicUrl;
-}
+const upload = (file: File) => uploadSiteImage(file, 'journal');
 
 function PhotoButton({ label, onDone }: { label: string; onDone: (src: string) => void }) {
   const input = useRef<HTMLInputElement>(null);
@@ -29,8 +23,8 @@ function PhotoButton({ label, onDone }: { label: string; onDone: (src: string) =
   );
 }
 
-export default function StoryEditor({ id, initial, blocks: initialBlocks, status, source, instagramUrl }: {
-  id: number; initial: StoryForm; blocks: Block[]; status: 'draft' | 'published'; source: 'manual' | 'ai'; instagramUrl: string | null;
+export default function StoryEditor({ id, initial, blocks: initialBlocks, status, source }: {
+  id: number; initial: StoryForm; blocks: Block[]; status: 'draft' | 'published'; source: 'manual' | 'ai';
 }) {
   const [f, setF] = useState<StoryForm>(initial);
   const [blocks, setBlocks] = useState<Block[]>(initialBlocks.length ? initialBlocks : [{ type: 'p', text: '' }]);
@@ -55,7 +49,7 @@ export default function StoryEditor({ id, initial, blocks: initialBlocks, status
   return (
     <div className="a-cols">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, minWidth: 0 }}>
-        {source === 'ai' && <div className="a-card" style={{ background: '#FBF3E6', borderColor: '#EBD3A9' }}><strong>AI draft from Instagram.</strong> <span className="a-sub">Read it through, correct anything that isn’t right, and add real names only with the clients’ permission. {instagramUrl && <a className="a-link" href={instagramUrl} target="_blank" rel="noopener noreferrer">See the original post</a>}</span></div>}
+        {source === 'ai' && <div className="a-card" style={{ background: '#FBF3E6', borderColor: '#EBD3A9' }}><strong>AI draft from your photos and note.</strong> <span className="a-sub">Read it through, correct anything that isn’t right, and add real names only with the clients’ permission. When you press Publish, the article goes live on the Journal and its photos appear on the Work page.</span></div>}
         <div className="a-card a-form" style={{ maxWidth: 'none' }}>
           <div className="field"><label htmlFor="st-title">Title</label><input id="st-title" className="input" value={f.title} onChange={(e) => set('title', e.target.value)} style={{ fontSize: 18, fontWeight: 600 }} /></div>
           <div className="field"><label htmlFor="st-lead">Opening paragraph</label><textarea id="st-lead" className="input" rows={3} value={f.lead} onChange={(e) => set('lead', e.target.value)} /></div>
@@ -104,7 +98,7 @@ export default function StoryEditor({ id, initial, blocks: initialBlocks, status
             {st === 'draft' ? <button type="button" className="btn btn-outline a-sm" disabled={busy} onClick={() => save(null)}>Save draft</button>
               : <button type="button" className="btn btn-outline a-sm" disabled={busy} onClick={() => save(false)}>Unpublish</button>}
           </div>
-          <a className="a-link" href={`/journal/${f.slug}?preview=1`} target="_blank" rel="noopener">Preview the page ↗</a>
+          <a className="a-link" href={`/journal/${f.slug}/preview`} target="_blank" rel="noopener">Preview the page ↗</a>
           <span className="a-hint">Save first to preview your latest changes.</span>
         </div>
         <div className="a-card a-form">

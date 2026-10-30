@@ -19,7 +19,6 @@ export default async function EditStory({ params }: { params: Promise<{ id: stri
         id={r.id}
         status={r.status}
         source={r.source}
-        instagramUrl={r.instagram_url}
         blocks={flat as never}
         initial={{
           title: r.title, slug: r.slug, category: r.category, excerpt: r.excerpt || '', lead: r.lead || '', body: r.body,

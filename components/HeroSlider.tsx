@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from './Icons';
+import { srcSetFor } from '@/lib/images';
 
 type Slide = { src: string; alt: string; eyebrow: string; caption: string; pos: string };
 
@@ -11,6 +12,12 @@ export default function HeroSlider({ slides: heroSlides, title, titleItalic, sub
   const [paused, setPaused] = useState(false);
   const n = heroSlides.length;
   const cur = heroSlides[i % n] || heroSlides[0];
+  // Only the first photo loads with the page; the next one is fetched just before it is shown.
+  const [ready, setReady] = useState<Set<number>>(() => new Set([0]));
+  useEffect(() => {
+    const t = setTimeout(() => setReady((r) => (r.has(i) && r.has((i + 1) % n) ? r : new Set([...r, i, (i + 1) % n]))), i === 0 ? 2500 : 0);
+    return () => clearTimeout(t);
+  }, [i, n]);
 
   useEffect(() => {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -31,14 +38,20 @@ export default function HeroSlider({ slides: heroSlides, title, titleItalic, sub
       onBlur={() => setPaused(false)}
     >
       {heroSlides.map((s, k) => (
-        <div
-          key={`${s.src}-${k}`}
-          className={k === i ? 'hero-slide on' : 'hero-slide'}
-          style={{ backgroundImage: `url(${s.src})`, backgroundPosition: s.pos }}
-          role="img"
-          aria-label={s.alt}
-          aria-hidden={k !== i}
-        />
+        <div key={`${s.src}-${k}`} className={k === i ? 'hero-slide on' : 'hero-slide'} aria-hidden={k !== i}>
+          {(ready.has(k) || k === i) && (
+            <img
+              src={s.src}
+              srcSet={srcSetFor(s.src)}
+              sizes="100vw"
+              alt={s.alt}
+              style={{ objectPosition: s.pos }}
+              fetchPriority={k === 0 ? 'high' : 'low'}
+              loading={k === 0 ? 'eager' : 'lazy'}
+              decoding={k === 0 ? 'sync' : 'async'}
+            />
+          )}
+        </div>
       ))}
       <div className="hero-shade" aria-hidden />
       <div className="wrap hero-inner">

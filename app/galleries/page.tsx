@@ -22,7 +22,7 @@ export default async function GalleriesPage({ searchParams }: { searchParams: Pr
 
   return (
     <div className="signin" id="main">
-      <div className="signin-photo" role="img" aria-label="Couple sharing a quiet moment, from a recent Tboss gallery" style={{ backgroundImage: 'url(/photos/gallery-signin.jpg)' }}>
+      <div className="signin-photo" role="img" aria-label="Couple sharing a quiet moment, from a recent Tboss gallery" style={{ backgroundImage: 'url(/photos/gallery-signin/w1600.webp)' }}>
         <Link href="/" aria-label="Tboss Photography, home"><img src="/brand/logo-cream.png" alt="Tboss Photography" width={128} height={88} /></Link>
       </div>
       <div className="signin-panel">

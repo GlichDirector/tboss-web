@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import HeroSlider from '@/components/HeroSlider';
+import Pic from '@/components/Pic';
 import StoryCard from '@/components/StoryCard';
 import { PersonIcon, QuoteMark } from '@/components/Icons';
 import { getContent } from '@/lib/siteContent';
@@ -13,7 +14,7 @@ export default async function Home() {
   const h = c.home;
   const stories = allStories.slice(0, 3);
   const work = photos.slice(0, 8);
-  const mini = ['/photos/couple-rings.jpg', '/photos/lace-hands.jpg', '/photos/white-hat-teal.jpg', '/photos/elder-flowers.jpg', '/photos/couple-cream.jpg', '/photos/headwrap-elder-profile.jpg'];
+  const mini = ['/photos/couple-rings/w1600.webp', '/photos/lace-hands/w1600.webp', '/photos/white-hat-teal/w1600.webp', '/photos/elder-flowers/w1600.webp', '/photos/couple-cream/w1600.webp', '/photos/headwrap-elder-profile/w1600.webp'];
 
   return (
     <>
@@ -42,7 +43,7 @@ export default async function Home() {
         <div className="photo-grid">
           {work.map((p) => (
             <Link href={p.link || '/work'} className="photo-card" key={p.src}>
-              <div className="frame"><img src={p.src} alt={p.alt} loading="lazy" /></div>
+              <div className="frame"><Pic src={p.src} alt={p.alt} width={p.width} height={p.height} blur={p.blur} sizes="(max-width: 760px) 50vw, (max-width: 1200px) 33vw, 400px" /></div>
               <span className="tag">{p.tag}</span>
             </Link>
           ))}
@@ -52,7 +53,7 @@ export default async function Home() {
       {h.showAbout && <section className="band-sand">
         <div className="wrap split">
           <div className="media" style={{ maxWidth: 520 }}>
-            <img src={h.aboutImage} alt="Studio portrait by Tboss Photography" style={{ aspectRatio: '4 / 5' }} loading="lazy" />
+            <Pic src={h.aboutImage} alt="Studio portrait by Tboss Photography" style={{ aspectRatio: '4 / 5' }} sizes="(max-width: 760px) 100vw, 520px" />
           </div>
           <div className="text">
             <p className="eyebrow">About the studio</p>
@@ -68,10 +69,10 @@ export default async function Home() {
           <p className="eyebrow">Giving back</p>
           <h2 className="h-section" id="heritage-h">{h.heritageTitle}</h2>
           <p className="lede">{h.heritageText}</p>
-          <Link href="/work?c=Heritage" className="link-line">Explore the project</Link>
+          <Link href="/work/heritage" className="link-line">Explore the project</Link>
         </div>
         <div className="media" style={{ flex: '1.4 1 520px' }}>
-          <img src={h.heritageImage} alt="Heritage portrait by Tboss Photography" style={{ aspectRatio: '16 / 10' }} loading="lazy" />
+          <Pic src={h.heritageImage} alt="Heritage portrait by Tboss Photography" style={{ aspectRatio: '16 / 10' }} sizes="(max-width: 760px) 100vw, 60vw" />
         </div>
       </section>}
 
@@ -86,7 +87,7 @@ export default async function Home() {
             </div>
           </div>
           <div className="media mini-grid">
-            {mini.map((src) => <img key={src} src={src} alt="" loading="lazy" />)}
+            {mini.map((src) => <Pic key={src} src={src} alt="" sizes="(max-width: 760px) 33vw, 200px" />)}
           </div>
         </div>
       </section>}

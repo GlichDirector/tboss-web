@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
-import { savePageAction, siteImageUploadAction } from '@/app/admin/website-actions';
-import { putBlob, resizeImage } from './imageTools';
+import { savePageAction } from '@/app/admin/website-actions';
+import { uploadSiteImage } from './uploadSiteImage';
 
 type Field =
   | { key: string; label: string; type: 'text' | 'textarea'; help?: string }
@@ -20,7 +20,7 @@ const SCHEMA: Record<string, { label: string; path: string; sections: Section[] 
       { key: 'heroSub', label: 'Line under the headline', type: 'textarea' }, { key: 'slides', label: 'Slides', type: 'slides' },
     ] },
     { title: 'What we photograph', toggle: 'showServices', fields: [{ key: 'services', label: 'Services', type: 'cards', item: 'service' }] },
-    { title: 'Selected work (from Instagram)', toggle: 'showWork', fields: [{ key: 'workTitle', label: 'Heading', type: 'text' }] },
+    { title: 'Selected work', toggle: 'showWork', fields: [{ key: 'workTitle', label: 'Heading', type: 'text' }] },
     { title: 'About the studio', toggle: 'showAbout', fields: [{ key: 'aboutTitle', label: 'Heading', type: 'text' }, { key: 'aboutText', label: 'Text', type: 'textarea' }, { key: 'aboutImage', label: 'Photo', type: 'image' }] },
     { title: 'Heritage project', toggle: 'showHeritage', fields: [{ key: 'heritageTitle', label: 'Heading', type: 'text' }, { key: 'heritageText', label: 'Text', type: 'textarea' }, { key: 'heritageImage', label: 'Photo', type: 'image' }] },
     { title: 'Client galleries band', toggle: 'showGalleries', fields: [{ key: 'galleriesTitle', label: 'Heading', type: 'text' }, { key: 'galleriesText', label: 'Text', type: 'textarea' }] },
@@ -39,7 +39,7 @@ const SCHEMA: Record<string, { label: string; path: string; sections: Section[] 
     { title: 'Introduction', fields: [{ key: 'title', label: 'Heading', type: 'text' }, { key: 'intro', label: 'Introduction', type: 'textarea' }, { key: 'replyTime', label: 'How fast you reply (e.g. 24 hours)', type: 'text' }] },
     { title: 'Questions & answers', fields: [{ key: 'faqs', label: 'FAQs', type: 'faqs' }] },
   ] },
-  work: { label: 'Work', path: '/work', sections: [{ title: 'Introduction', fields: [{ key: 'intro', label: 'Line under “The work”', type: 'textarea', help: 'Photos on this page come from Instagram. Hide or re-label them in Work & Instagram.' }] }] },
+  work: { label: 'Work', path: '/work', sections: [{ title: 'Introduction', fields: [{ key: 'intro', label: 'Line under “The work”', type: 'textarea', help: 'Photos on this page are the ones you post in Work. Hide or re-label them there.' }] }] },
 };
 
 type Data = Record<string, unknown>;
@@ -59,10 +59,7 @@ function ImageField({ value, onChange, label, size = 1800 }: { value: string; on
           if (!f) return;
           setBusy(true); setErr('');
           try {
-            const { blob } = await resizeImage(f, size);
-            const { url, publicUrl } = await siteImageUploadAction('site');
-            await putBlob(url, blob);
-            onChange(publicUrl);
+            onChange(await uploadSiteImage(f, 'site'));
           } catch { setErr('Upload failed. Check the photo storage settings and try again.'); }
           setBusy(false);
         }} />

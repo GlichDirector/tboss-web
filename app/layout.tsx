@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   },
   twitter: { card: 'summary_large_image' },
   alternates: { canonical: '/' },
+  // Paste the code from Google Search Console / Bing Webmaster Tools into Hostinger to verify the site.
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.BING_SITE_VERIFICATION ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION } : undefined,
+  },
+  robots: { index: true, follow: true, googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 } },
 };
 
 export const viewport: Viewport = { themeColor: '#F7F2EA' };

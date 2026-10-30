@@ -16,7 +16,7 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     <div className="a-login" id="main">
       <div className="a-login-brand">
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}><img src="/brand/logo-cream.png" alt="Tboss Photography" width={93} height={64} /><span className="a-kicker" style={{ color: '#C9C0B4' }}>Studio</span></div>
-        <img src="/photos/white-hat-teal.jpg" alt="" className="a-login-photo" />
+        <img src="/photos/white-hat-teal/w1600.webp" alt="" className="a-login-photo" />
         <p className="serif" style={{ margin: 0, fontSize: 34, lineHeight: 1.1 }}>You’re invited to <em>join the team.</em></p>
       </div>
       <main className="a-login-form">

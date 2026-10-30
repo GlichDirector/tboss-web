@@ -187,7 +187,7 @@ const schema = [
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY by_order (order_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
-  // ---- Phase 4: team, website, journal, instagram ----
+  // ---- Phase 4: team, website, journal ----
   `CREATE TABLE IF NOT EXISTS team (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(200) NOT NULL UNIQUE,
@@ -219,6 +219,7 @@ const schema = [
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // (instagram_posts is no longer used; kept so older data isn't lost)
   `CREATE TABLE IF NOT EXISTS instagram_posts (
     id VARCHAR(40) PRIMARY KEY,
     caption TEXT NULL,
@@ -232,6 +233,23 @@ const schema = [
     hidden TINYINT(1) NOT NULL DEFAULT 0,
     story_id INT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // ---- Work photos (posted from the admin) ----
+  `CREATE TABLE IF NOT EXISTS work_photos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    story_id INT NULL,
+    category VARCHAR(20) NOT NULL DEFAULT 'Portraits',
+    media_base VARCHAR(255) NOT NULL,
+    ext VARCHAR(5) NOT NULL DEFAULT 'webp',
+    width INT NOT NULL DEFAULT 0,
+    height INT NOT NULL DEFAULT 0,
+    alt VARCHAR(300) NULL,
+    blur TEXT NULL,
+    hidden TINYINT(1) NOT NULL DEFAULT 0,
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_cat (category, hidden),
+    KEY by_story (story_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
