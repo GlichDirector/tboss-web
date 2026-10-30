@@ -1,0 +1,27 @@
+{
+  "name": "tboss-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tboss Photography website, client galleries and studio admin",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.2.6",
+    "@fontsource/manrope": "^5.2.6",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.1",
+    "@types/react": "^19.1.12",
+    "typescript": "^5.9.2"
+  }
+}
