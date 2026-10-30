@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import EnquiryActions from '@/components/admin/EnquiryActions';
 import { listEnquiries, longDate } from '@/lib/studio';
 
 const tabs = [['new', 'New'], ['replied', 'Replied'], ['converted', 'Became clients'], ['archived', 'Archived'], ['all', 'All']] as const;
 
 export default async function EnquiriesPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
+  await requireArea('clients');
   const { s = 'new' } = await searchParams;
   const rows = await listEnquiries(s);
   return (

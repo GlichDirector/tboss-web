@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { listOrders, longDate, naira, time12, type OrderState } from '@/lib/studio';
 
 const columns: { title: string; match: (o: OrderState) => boolean }[] = [
@@ -12,6 +13,7 @@ const columns: { title: string; match: (o: OrderState) => boolean }[] = [
 ];
 
 export default async function OrdersBoard() {
+  await requireArea('clients');
   const orders = (await listOrders()).filter((o) => o.stage !== 'Cancelled');
   return (
     <>

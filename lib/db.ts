@@ -187,6 +187,52 @@ const schema = [
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY by_order (order_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // ---- Phase 4: team, website, journal, instagram ----
+  `CREATE TABLE IF NOT EXISTS team (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(200) NOT NULL UNIQUE,
+    name VARCHAR(120) NULL,
+    role ENUM('full','editor','assistant','bookkeeper') NOT NULL DEFAULT 'assistant',
+    invite_token VARCHAR(40) NULL,
+    invited_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    accepted_at DATETIME NULL
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS stories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    status ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    source ENUM('manual','ai') NOT NULL DEFAULT 'manual',
+    title VARCHAR(200) NOT NULL,
+    category VARCHAR(40) NOT NULL DEFAULT 'Portraits',
+    excerpt VARCHAR(400) NULL,
+    lead TEXT NULL,
+    body MEDIUMTEXT NOT NULL,
+    cover_key VARCHAR(255) NULL,
+    cover_alt VARCHAR(255) NULL,
+    location VARCHAR(160) NULL,
+    session_type VARCHAR(120) NULL,
+    styling VARCHAR(160) NULL,
+    keywords VARCHAR(400) NULL,
+    instagram_id VARCHAR(40) NULL,
+    instagram_url VARCHAR(255) NULL,
+    published_at DATE NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  `CREATE TABLE IF NOT EXISTS instagram_posts (
+    id VARCHAR(40) PRIMARY KEY,
+    caption TEXT NULL,
+    permalink VARCHAR(255) NULL,
+    media_type VARCHAR(20) NULL,
+    posted_at DATETIME NULL,
+    image_key VARCHAR(255) NULL,
+    width INT NOT NULL DEFAULT 0,
+    height INT NOT NULL DEFAULT 0,
+    tag VARCHAR(20) NOT NULL DEFAULT 'Portrait',
+    hidden TINYINT(1) NOT NULL DEFAULT 0,
+    story_id INT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
 // Changes to tables that already exist on the live site. Each runs once; "already there" is ignored.

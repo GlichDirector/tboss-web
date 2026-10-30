@@ -1,6 +1,7 @@
 import 'server-only';
 import { timingSafeEqual } from 'node:crypto';
-import { getUser, isAdminEmail, type User } from './auth';
+import { getUser, type User } from './auth';
+import { getStaff } from './team';
 import { emailsOf, getGalleryBySlug, isExpired, type Gallery } from './galleries';
 
 export type Access = { gallery: Gallery; user: User | null; admin: boolean };
@@ -17,7 +18,8 @@ export async function galleryAccess(slug: string, key: string | null | undefined
   const gallery = await getGalleryBySlug(slug);
   if (!gallery) return null;
   const user = await getUser();
-  const admin = isAdminEmail(user?.email);
+  const staff = user ? await getStaff() : null;
+  const admin = Boolean(staff?.areas.has('galleries'));
   if (admin) return { gallery, user, admin };
   if (gallery.stage === 'draft' || isExpired(gallery)) return null;
   const listed = Boolean(user && emailsOf(gallery).includes(user.email.toLowerCase()));

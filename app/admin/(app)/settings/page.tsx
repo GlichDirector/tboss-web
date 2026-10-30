@@ -1,9 +1,11 @@
 import ActionForm from '@/components/admin/ActionForm';
+import { requireArea } from '@/lib/team';
 import PackagesEditor from '@/components/admin/PackagesEditor';
 import { saveStudioSettingsAction } from '@/app/admin/studio-actions';
 import { getPackages, getStudio } from '@/lib/studio';
 
 export default async function SettingsPage() {
+  await requireArea('settings');
   const [studio, packages] = await Promise.all([getStudio(), getPackages()]);
   const admins = (process.env.ADMIN_EMAILS || '').split(',').map((e) => e.trim()).filter(Boolean);
   return (
@@ -25,8 +27,7 @@ export default async function SettingsPage() {
         </ActionForm>
         <div className="a-card">
           <h2 className="a-h2">Team</h2>
-          <p className="a-sub" style={{ margin: '0 0 10px' }}>These Google accounts can sign in to the studio admin. To change the list, edit ADMIN_EMAILS in Hostinger and redeploy. Inviting team members from here arrives in Phase 4.</p>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>{admins.map((a) => <li key={a}>{a}</li>)}</ul>
+          <p className="a-sub" style={{ margin: 0 }}>Owners: {admins.join(', ')}. Invite team members and choose what they can see on the <a className="a-link" href="/admin/team">Team page</a>.</p>
         </div>
       </div>
     </>

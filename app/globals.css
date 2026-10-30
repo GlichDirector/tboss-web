@@ -457,3 +457,49 @@ textarea.input { padding: 12px 14px; min-height: 0; resize: vertical; }
 .a-todo li a { display: block; padding: 10px 12px; border-radius: 8px; background: #FBF8F3; border-left: 3px solid #D9CFC2; }
 .a-todo li.urgent a { border-left-color: var(--oxblood); }
 @media (max-width: 760px) { .a-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- Page editor ---------- */
+.pe { display: grid; grid-template-columns: minmax(320px, 420px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.pe-form { display: flex; flex-direction: column; gap: 12px; }
+.pe-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.pe-sec { padding: 0; }
+.pe-sec > summary { list-style: none; cursor: pointer; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 700; }
+.pe-sec > summary::-webkit-details-marker { display: none; }
+.pe-sec[open] > summary { border-bottom: 1px solid rgba(31,26,22,0.08); }
+.pe-fields { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 14px; }
+.pe-toggle { display: inline-flex; gap: 6px; align-items: center; font-weight: 600; font-size: 12px; color: var(--muted); }
+.pe-toggle input { width: 16px; height: 16px; accent-color: var(--oxblood); }
+.pe-list { display: flex; flex-direction: column; gap: 10px; }
+.pe-item { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; background: #FBF8F3; }
+.pe-item-tools { display: flex; gap: 14px; }
+.pe-preview { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.pe-frame { border-radius: 12px; overflow: hidden; border: 1px solid rgba(31,26,22,0.12); background: #fff; box-shadow: 0 12px 32px rgba(31,26,22,0.08); }
+.pe-frame.desktop { height: 78svh; }
+.pe-frame.desktop iframe { width: 1280px; height: calc(78svh / 0.6); transform: scale(0.6); transform-origin: 0 0; border: 0; display: block; }
+.pe-frame.phone { width: 390px; height: 78svh; margin: 0 auto; border: 8px solid #1F1A16; border-radius: 28px; }
+.pe-frame.phone iframe { width: 100%; height: 100%; border: 0; display: block; }
+@media (max-width: 1100px) { .pe { grid-template-columns: minmax(0, 1fr); } .pe-preview { position: static; } .pe-frame.desktop iframe { transform: scale(0.45); height: calc(78svh / 0.45); } }
+@media (max-width: 760px) { .pe-frame.phone { width: 100%; } }
+.a-stories { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.a-story { display: flex; gap: 14px; align-items: center; padding: 10px; }
+.a-story img { width: 96px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; background: #EFE7DA; }
+.a-igrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.a-ipost { display: flex; flex-direction: column; gap: 8px; padding: 10px; }
+.a-ipost img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: 8px; background: #EFE7DA; }
+
+/* ---------- Email builder ---------- */
+.eb { display: grid; grid-template-columns: 240px minmax(300px, 1fr) minmax(0, 1.2fr); gap: 16px; align-items: start; }
+.eb-list { display: flex; flex-direction: column; gap: 6px; }
+.eb-list button { text-align: left; border: 1px solid rgba(31,26,22,0.1); background: #fff; border-radius: 10px; padding: 10px 12px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; font: inherit; }
+.eb-list button[aria-pressed='true'] { border-color: var(--oxblood); box-shadow: inset 3px 0 0 var(--oxblood); }
+.eb-var { background: #F1EBE1; border-radius: 4px; padding: 1px 5px; margin: 0 3px; font-size: 12px; }
+.eb-preview { position: sticky; top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.eb-frame { border: 1px solid rgba(31,26,22,0.12); border-radius: 12px; background: #fff; height: 74svh; width: 100%; }
+.eb-frame.phone { width: 390px; margin: 0 auto; border: 8px solid #1F1A16; border-radius: 28px; }
+@media (max-width: 1200px) { .eb { grid-template-columns: 220px minmax(0, 1fr); } .eb-preview { grid-column: 1 / -1; position: static; } }
+@media (max-width: 760px) { .eb { grid-template-columns: minmax(0, 1fr); } .eb-list { flex-direction: row; overflow-x: auto; } .eb-list button { min-width: 180px; } .eb-frame.phone { width: 100%; } }
+@media (max-width: 760px) {
+  .a-side { align-self: stretch; width: 100%; min-width: 0; overflow: visible; }
+  .a-nav { min-width: 0; max-width: 100%; }
+  .a-main { min-width: 0; width: 100%; }
+}

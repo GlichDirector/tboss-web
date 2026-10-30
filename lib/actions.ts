@@ -3,6 +3,7 @@
 import { studio } from './site';
 import { dbConfigured } from './db';
 import { saveEnquiry } from './studio';
+import { sendTemplate } from './mail';
 
 export type FormState = { ok: boolean; error?: string; firstName?: string; email?: string; type?: string };
 
@@ -77,11 +78,7 @@ export async function sendEnquiry(_prev: FormState, form: FormData): Promise<For
   if (!toStudio && !stored) return { ok: false, error: 'Sorry, your enquiry didn’t send. Please try again, or call or WhatsApp us.' };
 
   const firstName = name.split(/\s+/)[0];
-  await sendEmail(
-    email,
-    'We’ve received your enquiry · Tboss Photography',
-    `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#1F1A16"><p>Hi ${escapeHtml(firstName)},</p><p>Thank you for getting in touch about a ${escapeHtml(type.toLowerCase())} session. We’ve received your details and will reply with availability and options.</p><p>Can’t wait? Call or WhatsApp us on ${studio.phoneDisplay}.</p><p>Warmly,<br>Tboss Photography</p><table style="margin-top:16px;font-size:13px">${table}</table></div>`,
-  );
+  await sendTemplate('enquiry', email, { first_name: firstName, session_type: type.toLowerCase() }, { rows: rows.filter(([, v]) => v) as [string, string][] });
 
   return { ok: true, firstName, email, type };
 }

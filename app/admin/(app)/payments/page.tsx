@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { lagosDate, listOrders, listPayments, longDate, naira } from '@/lib/studio';
 
 export default async function PaymentsPage() {
+  await requireArea('payments');
   const [payments, orders] = await Promise.all([listPayments(), listOrders()]);
   const month = lagosDate().slice(0, 7);
   const thisMonth = payments.filter((p) => p.paid_on.startsWith(month)).reduce((s, p) => s + Number(p.amount), 0);

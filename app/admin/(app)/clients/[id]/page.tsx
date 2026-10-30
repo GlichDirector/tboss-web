@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { notFound } from 'next/navigation';
 import ActionForm from '@/components/admin/ActionForm';
 import NewOrder from '@/components/admin/NewOrder';
@@ -8,6 +9,7 @@ import { galleriesForEmail } from '@/lib/galleries';
 import { getClient, getPackages, longDate, naira, ordersForClient } from '@/lib/studio';
 
 export default async function ClientPage({ params }: { params: Promise<{ id: string }> }) {
+  await requireArea('clients');
   const id = Number((await params).id);
   const c = await getClient(id);
   if (!c) notFound();

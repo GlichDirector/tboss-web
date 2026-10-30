@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { listGalleries } from '@/lib/galleries';
 import { formatDate } from '@/lib/content';
 
 const stageLabel = { draft: 'Draft · not shared', selection: 'Client choosing', finished: 'Delivered' } as const;
 
 export default async function GalleriesAdmin() {
+  await requireArea('galleries');
   const rows = await listGalleries();
   return (
     <>

@@ -1,7 +1,9 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import AddClients from '@/components/admin/AddClients';
 
-export default function NewClients() {
+export default async function NewClients() {
+  await requireArea('clients');
   return (
     <>
       <div className="a-head"><div><p className="a-kicker"><Link href="/admin/clients">Clients</Link> /</p><h1>Add clients</h1></div></div>

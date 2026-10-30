@@ -3,6 +3,8 @@ import Link from 'next/link';
 import WorkGrid from '@/components/WorkGrid';
 import { collections, type Collection } from '@/lib/content';
 import { studio } from '@/lib/site';
+import { getContent } from '@/lib/siteContent';
+import { workPhotos } from '@/lib/journal';
 
 export const metadata: Metadata = {
   title: 'Portfolio · Portrait, wedding and heritage photography',
@@ -13,6 +15,7 @@ export const metadata: Metadata = {
 export default async function WorkPage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const { c } = await searchParams;
   const initial = (collections.find((g) => g.key === c)?.key ?? null) as Collection | null;
+  const [content, photos] = await Promise.all([getContent(), workPhotos()]);
 
   return (
     <>
@@ -20,13 +23,13 @@ export default async function WorkPage({ searchParams }: { searchParams: Promise
         <p className="eyebrow">Portfolio</p>
         <h1 className="h-display">The work</h1>
         <p className="lede">
-          Recent photographs from the studio and on location. New posts on{' '}
+          {content.work.intro} New posts on{' '}
           <a href={studio.instagramUrl} target="_blank" rel="noopener noreferrer" style={{ borderBottom: '1px solid currentColor' }}>{studio.instagramHandle}</a>{' '}
           will appear here automatically.
         </p>
       </section>
       <section className="wrap" style={{ paddingTop: 24, paddingBottom: 80 }} aria-label="Photos">
-        <WorkGrid initial={initial} />
+        <WorkGrid initial={initial} photos={photos} />
       </section>
       <section className="band-dark">
         <div className="wrap cta-row" style={{ paddingTop: 88, paddingBottom: 88 }}>

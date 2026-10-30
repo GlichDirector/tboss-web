@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { bookingsBetween, lagosDate, time12 } from '@/lib/studio';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 export default async function CalendarPage({ searchParams }: { searchParams: Promise<{ m?: string }> }) {
+  await requireArea('calendar');
   const { m } = await searchParams;
   const [y, mo] = (/^\d{4}-\d{2}$/.test(m || '') ? m! : lagosDate().slice(0, 7)).split('-').map(Number);
   const first = new Date(Date.UTC(y, mo - 1, 1));

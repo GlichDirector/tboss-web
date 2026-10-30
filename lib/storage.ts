@@ -77,3 +77,26 @@ export async function removeKeys(keys: string[]) {
   }
   await s3().send(new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: keys.map((Key) => ({ Key })) } }));
 }
+
+// Server-side save and read (Instagram copies and AI drafting). Small files only.
+export async function putObject(key: string, body: Buffer, contentType = 'image/jpeg') {
+  if (local) {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    const file = path.join(process.cwd(), '.storage', key);
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    await fs.writeFile(file, body);
+    return;
+  }
+  await s3().send(new PutObjectCommand({ Bucket: bucket(), Key: key, Body: body, ContentType: contentType }));
+}
+
+export async function getObject(key: string): Promise<Buffer> {
+  if (local) {
+    const fs = await import('node:fs/promises');
+    const path = await import('node:path');
+    return fs.readFile(path.join(process.cwd(), '.storage', key));
+  }
+  const res = await s3().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
+  return Buffer.from(await res.Body!.transformToByteArray());
+}

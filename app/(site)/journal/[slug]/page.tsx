@@ -3,17 +3,17 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import ShareLinks from '@/components/ShareLinks';
 import StoryCard from '@/components/StoryCard';
-import { formatDate, getStories, getStory, readMinutes } from '@/lib/content';
+import { formatDate, readMinutes } from '@/lib/content';
+import { publishedStories, publishedStory } from '@/lib/journal';
+import { getStaff } from '@/lib/team';
 import { siteUrl, studio } from '@/lib/site';
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ preview?: string }> };
 
-export function generateStaticParams() {
-  return getStories().map((s) => ({ slug: s.slug }));
-}
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const story = getStory((await params).slug);
+  const story = await publishedStory((await params).slug);
   if (!story) return {};
   return {
     title: story.title,
@@ -25,11 +25,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function StoryPage({ params }: Props) {
-  const story = getStory((await params).slug);
+export default async function StoryPage({ params, searchParams }: Props) {
+  const slug = (await params).slug;
+  const preview = (await searchParams).preview === '1' && Boolean((await getStaff())?.areas.has('website'));
+  const story = await publishedStory(slug, preview);
   if (!story) notFound();
   const url = `${siteUrl}/journal/${story.slug}`;
-  const related = getStories().filter((s) => s.slug !== story.slug).slice(0, 3);
+  const related = (await publishedStories()).filter((s) => s.slug !== story.slug).slice(0, 3);
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',

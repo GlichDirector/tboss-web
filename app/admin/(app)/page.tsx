@@ -1,16 +1,24 @@
 import Link from 'next/link';
-import { getAdmin } from '@/lib/auth';
+import { requireArea } from '@/lib/team';
 import { q } from '@/lib/db';
 import { bookingsBetween, countNewEnquiries, lagosDate, listOrders, listPayments, longDate, naira, time12 } from '@/lib/studio';
 
-export default async function Dashboard() {
-  const [user, orders, newEnq, payments] = await Promise.all([getAdmin(), listOrders(), countNewEnquiries(), listPayments()]);
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ denied?: string }> }) {
+  const staff = await requireArea('dashboard');
+  const { denied } = await searchParams;
+  const can = (a: Parameters<typeof staff.areas.has>[0]) => staff.areas.has(a);
+  const user = staff.user;
+  const [orders, newEnq, payments] = await Promise.all([
+    can('clients') || can('payments') ? listOrders() : Promise.resolve([]),
+    can('clients') ? countNewEnquiries() : Promise.resolve(0),
+    can('payments') ? listPayments() : Promise.resolve([]),
+  ]);
   const today = lagosDate();
   const upcoming = await bookingsBetween(today, lagosDate(14));
   const live = orders.filter((o) => o.stage !== 'Cancelled');
   const month = today.slice(0, 7);
   const received = payments.filter((p) => p.paid_on.startsWith(month)).reduce((s, p) => s + Number(p.amount), 0);
-  const waitingPicks = await q<{ id: number; client_name: string; title: string }>(
+  const waitingPicks = !can('galleries') ? [] : await q<{ id: number; client_name: string; title: string }>(
     `SELECT g.id, g.client_name, g.title FROM galleries g WHERE g.stage = 'selection'
      AND EXISTS (SELECT 1 FROM selections s WHERE s.gallery_id = g.id)
      AND NOT EXISTS (SELECT 1 FROM photos p WHERE p.gallery_id = g.id AND p.folder = 'edited' AND p.ready = 1)`);
@@ -36,10 +44,11 @@ export default async function Dashboard() {
       <div className="a-head">
         <div><p className="a-kicker">{longDate(today)}</p><h1>Good {Number(new Date(Date.now() + 3600000).toISOString().slice(11, 13)) < 12 ? 'morning' : 'afternoon'}, {user?.name.split(' ')[0]}</h1></div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <Link href="/admin/clients/new" className="btn btn-outline a-sm">+ Add clients</Link>
-          <Link href="/admin/galleries/new" className="btn btn-accent a-sm">+ New gallery</Link>
+          {can('clients') && <Link href="/admin/clients/new" className="btn btn-outline a-sm">+ Add clients</Link>}
+          {can('galleries') && <Link href="/admin/galleries/new" className="btn btn-accent a-sm">+ New gallery</Link>}
         </div>
       </div>
+      {denied && <div className="alert" style={{ marginBottom: 16 }}>Your role doesn’t include that page. Ask the owner if you need it.</div>}
       <div className="a-strip" aria-label="Orders by stage">
         {strip.map((x) => <Link key={x.s} href="/admin/orders" className="a-card"><strong>{x.n}</strong><span className="a-sub">{x.s}</span></Link>)}
       </div>
@@ -58,7 +67,7 @@ export default async function Dashboard() {
             )}
             <Link href="/admin/calendar" className="a-link">Open calendar</Link>
           </section>
-          <section className="a-card"><span className="a-sub">Received this month</span><div className="serif" style={{ fontSize: 34 }}>{naira(received)}</div><Link href="/admin/payments" className="a-link">Payments &amp; invoices</Link></section>
+          {can('payments') && <section className="a-card"><span className="a-sub">Received this month</span><div className="serif" style={{ fontSize: 34 }}>{naira(received)}</div><Link href="/admin/payments" className="a-link">Payments &amp; invoices</Link></section>}
         </div>
       </div>
     </>

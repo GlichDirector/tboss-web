@@ -2,14 +2,15 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { PersonIcon } from '@/components/Icons';
-import { getUser, isAdminEmail } from '@/lib/auth';
+import { getUser } from '@/lib/auth';
+import { getStaff } from '@/lib/team';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Studio sign in', robots: { index: false, follow: false } };
 
 export default async function AdminLogin() {
   const user = await getUser();
-  if (user && isAdminEmail(user.email)) redirect('/admin');
+  if (user && (await getStaff())) redirect('/admin');
   const ready = Boolean(process.env.GOOGLE_CLIENT_ID);
 
   return (

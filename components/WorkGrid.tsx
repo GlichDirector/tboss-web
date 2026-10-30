@@ -1,9 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { collections, photos, type Collection } from '@/lib/content';
+import { collections, type Collection, type Photo } from '@/lib/content';
 
-export default function WorkGrid({ initial }: { initial: Collection | null }) {
+export default function WorkGrid({ initial, photos }: { initial: Collection | null; photos: (Photo & { link?: string })[] }) {
   const [filter, setFilter] = useState<Collection | null>(initial);
   const shown = filter ? photos.filter((p) => p.tag === filter) : photos;
   const groups = collections
@@ -32,8 +32,8 @@ export default function WorkGrid({ initial }: { initial: Collection | null }) {
       <div className="photo-grid" style={{ marginTop: 32 }} aria-live="polite">
         {shown.map((p) => (
           <figure className="photo-card" key={p.src} style={{ margin: 0 }}>
-            <div className="frame"><img src={p.src} alt={p.alt} loading="lazy" /></div>
-            <figcaption className="tag">{p.tag}</figcaption>
+            <div className="frame">{p.link ? <a href={p.link}><img src={p.src} alt={p.alt} loading="lazy" /></a> : <img src={p.src} alt={p.alt} loading="lazy" />}</div>
+            <figcaption className="tag" style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>{p.tag}{p.link && <a href={p.link} style={{ color: 'var(--oxblood)', fontWeight: 600, textTransform: 'none', letterSpacing: 0 }}>Read the story</a>}</figcaption>
           </figure>
         ))}
       </div>

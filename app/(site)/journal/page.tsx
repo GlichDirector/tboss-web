@@ -2,7 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import StoryCard from '@/components/StoryCard';
 import SubscribeForm from '@/components/SubscribeForm';
-import { formatDate, getStories, readMinutes } from '@/lib/content';
+import { formatDate, readMinutes } from '@/lib/content';
+import { publishedStories } from '@/lib/journal';
+
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   title: 'Journal · Stories behind the sessions',
@@ -14,7 +17,7 @@ const cats = ['Portraits', 'Families', 'Events', 'Heritage', 'Guides & tips'] as
 
 export default async function JournalPage({ searchParams }: { searchParams: Promise<{ c?: string }> }) {
   const { c } = await searchParams;
-  const all = getStories();
+  const all = await publishedStories();
   const active = cats.find((x) => x === c);
   const stories = active ? all.filter((s) => s.category === active) : all;
   const [featured, ...rest] = stories;

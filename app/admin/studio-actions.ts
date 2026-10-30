@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { getAdmin } from '@/lib/auth';
+import { assertArea, type Area } from '@/lib/team';
 import { createGallery, getGallery } from '@/lib/galleries';
 import {
   addPayment, createClient, createOrder, deletePayment, findClientByEmail, getClient, getEnquiry, getPackages, getStudio, lagosDate, logEvent,
@@ -11,11 +11,7 @@ import {
 } from '@/lib/studio';
 import { emailBooking, emailInvoice, emailReceipt } from '@/lib/studioMail';
 
-async function admin() {
-  const a = await getAdmin();
-  if (!a) throw new Error('Please sign in to the studio admin again.');
-  return a;
-}
+const admin = (area: Area = 'clients') => assertArea(area);
 const s = (f: FormData, k: string, max = 300) => String(f.get(k) ?? '').trim().slice(0, max);
 const isDate = (v: string) => /^\d{4}-\d{2}-\d{2}$/.test(v);
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
@@ -129,7 +125,7 @@ export async function saveInvoiceAction(orderId: number, _p: R, f: FormData): Pr
 // ---------------- payments ----------------
 
 export async function addPaymentAction(orderId: number, _p: R, f: FormData): Promise<R> {
-  await admin();
+  await admin('payments');
   const st = await orderState(orderId);
   if (!st) return { error: 'Order not found.' };
   const amount = toNaira(s(f, 'amount'));
@@ -147,7 +143,7 @@ export async function addPaymentAction(orderId: number, _p: R, f: FormData): Pro
 }
 
 export async function deletePaymentAction(orderId: number, paymentId: number) {
-  await admin();
+  await admin('payments');
   await deletePayment(orderId, paymentId);
   await logEvent(orderId, 'A payment record was removed');
   revalidatePath(`/admin/orders/${orderId}`);
@@ -199,7 +195,7 @@ export async function markConfirmedAction(orderId: number) {
 // ---------------- gallery ----------------
 
 export async function createOrderGalleryAction(orderId: number) {
-  await admin();
+  await admin('galleries');
   const st = await orderState(orderId);
   if (!st) throw new Error('Order not found.');
   if (st.order.gallery_id && (await getGallery(st.order.gallery_id))) redirect(`/admin/galleries/${st.order.gallery_id}`);
@@ -218,7 +214,7 @@ export async function createOrderGalleryAction(orderId: number) {
 // ---------------- settings ----------------
 
 export async function saveStudioSettingsAction(_p: R, f: FormData): Promise<R> {
-  await admin();
+  await admin('settings');
   await setSetting('studio', {
     bankName: s(f, 'bankName', 80), accountName: s(f, 'accountName', 120), accountNumber: s(f, 'accountNumber', 20),
     invoiceNote: s(f, 'invoiceNote', 1000), studioAddress: s(f, 'studioAddress', 255),
@@ -229,7 +225,7 @@ export async function saveStudioSettingsAction(_p: R, f: FormData): Promise<R> {
 }
 
 export async function savePackagesAction(_p: R, f: FormData): Promise<R> {
-  await admin();
+  await admin('settings');
   const raw = JSON.parse(s(f, 'packages', 50000) || '[]') as { id: string; name: string; price: string; photos: string; description: string }[];
   const list: Package[] = raw.filter((p) => p.name.trim()).map((p, i) => ({
     id: p.id || `p${Date.now()}${i}`, name: p.name.trim().slice(0, 80), price: toNaira(p.price), photos: Math.max(0, Number(p.photos) || 0), description: p.description.trim().slice(0, 200),

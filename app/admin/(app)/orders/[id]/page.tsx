@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { notFound } from 'next/navigation';
 import ActionForm from '@/components/admin/ActionForm';
 import GalleryButton from '@/components/admin/GalleryButton';
@@ -9,6 +10,8 @@ import { getGallery } from '@/lib/galleries';
 import { getStudio, invoiceVersions, lagosDate, longDate, naira, orderEvents, orderState, time12 } from '@/lib/studio';
 
 export default async function OrderPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ open?: string }> }) {
+  const staff = await requireArea('clients');
+  const canPay = staff.areas.has('payments');
   const id = Number((await params).id);
   const { open } = await searchParams;
   const st = await orderState(id);
@@ -65,10 +68,10 @@ export default async function OrderPage({ params, searchParams }: { params: Prom
             <div className="a-sec-h"><h2 id="s-pay" className="a-h2">2 · Payments</h2><span className="a-sub">Paid {naira(st.paid)} · balance <strong style={{ color: st.balance ? 'var(--oxblood)' : '#25573A' }}>{naira(st.balance)}</strong></span></div>
             {payments.length > 0 && (
               <table className="a-table"><tbody>{payments.map((p) => (
-                <tr key={p.id}><td><strong>{naira(p.amount)}</strong><div className="a-sub">{p.method}{p.reference ? ` · ${p.reference}` : ''}</div></td><td className="a-sub">{longDate(p.paid_on)}</td><td style={{ textAlign: 'right' }}><RemovePayment orderId={id} paymentId={p.id} /></td></tr>
+                <tr key={p.id}><td><strong>{naira(p.amount)}</strong><div className="a-sub">{p.method}{p.reference ? ` · ${p.reference}` : ''}</div></td><td className="a-sub">{longDate(p.paid_on)}</td><td style={{ textAlign: 'right' }}>{canPay && <RemovePayment orderId={id} paymentId={p.id} />}</td></tr>
               ))}</tbody></table>
             )}
-            {(st.balance > 0 || !invoice) && <PaymentForm orderId={id} balance={st.balance} depositLeft={depositLeft} today={lagosDate()} />}
+            {canPay && (st.balance > 0 || !invoice) && <PaymentForm orderId={id} balance={st.balance} depositLeft={depositLeft} today={lagosDate()} />}
           </section>
 
           {/* 3 · Booking */}

@@ -1,28 +1,30 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getAdmin } from '@/lib/auth';
 import { dbHealth } from '@/lib/db';
 import { storageConfigured } from '@/lib/storage';
 import { countNewEnquiries } from '@/lib/studio';
 import AdminNav from '@/components/admin/AdminNav';
+import { getStaff, ROLES } from '@/lib/team';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Studio', robots: { index: false, follow: false } };
 
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await getAdmin();
-  if (!user) redirect('/admin/login');
+  const staff = await getStaff();
+  if (!staff) redirect('/admin/login');
+  const user = staff.user;
   const db = await dbHealth();
   const storageOk = storageConfigured();
   return (
     <div className="a-shell">
       <aside className="a-side">
         <Link href="/admin" aria-label="Studio home"><img src="/brand/logo-brown.png" alt="Tboss Photography" width={64} height={44} /></Link>
-        <AdminNav newEnquiries={db.ok ? await countNewEnquiries() : 0} />
+        <AdminNav newEnquiries={db.ok && staff.areas.has('clients') ? await countNewEnquiries() : 0} areas={[...staff.areas]} />
         <div className="a-me">
           <span>{user.name}</span>
+          <span style={{ fontSize: 11 }}>{staff.owner ? 'Owner' : ROLES[staff.role].label}</span>
           <a href="/api/auth/logout?next=/admin/login">Sign out</a>
         </div>
       </aside>

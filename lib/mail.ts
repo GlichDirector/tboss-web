@@ -18,21 +18,32 @@ export async function sendMail(to: string, subject: string, html: string, replyT
 
 export const notifyStudio = (subject: string, html: string) => sendMail(process.env.STUDIO_INBOX || studio.email, subject, html);
 
-export const esc = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+export { esc, brandedEmail } from './emailHtml';
 
-// Branded email wrapper used by gallery emails.
-export function brandedEmail(o: { heading: string; intro: string; rows?: [string, string][]; cta?: { label: string; url: string }; note?: string }) {
-  const rows = (o.rows || []).map(([k, v]) => `<tr><td style="padding:6px 0;color:#625850">${esc(k)}</td><td style="padding:6px 0;text-align:right;font-weight:600">${esc(v)}</td></tr>`).join('');
-  return `<div style="background:#E9E3DA;padding:32px 12px;font-family:Arial,Helvetica,sans-serif;color:#1F1A16">
-  <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
-    <div style="background:#F7F2EA;padding:22px;text-align:center;font-family:Georgia,serif;font-size:22px;letter-spacing:0.08em">TBOSS PHOTOGRAPHY</div>
-    <div style="padding:28px 32px;font-size:15px;line-height:1.6">
-      <h1 style="font-family:Georgia,serif;font-weight:500;font-size:30px;line-height:1.15;margin:0 0 14px">${esc(o.heading)}</h1>
-      <p style="margin:0 0 16px">${o.intro}</p>
-      ${rows ? `<table style="width:100%;background:#FBF8F3;border-radius:10px;padding:10px 16px;font-size:14px;margin:0 0 20px">${rows}</table>` : ''}
-      ${o.cta ? `<p style="text-align:center;margin:24px 0"><a href="${o.cta.url}" style="background:#7A2E2A;color:#fff;text-decoration:none;padding:14px 28px;border-radius:999px;font-weight:700;display:inline-block">${esc(o.cta.label)}</a></p>` : ''}
-      ${o.note ? `<p style="font-size:13px;color:#625850;text-align:center;margin:0">${o.note}</p>` : ''}
-    </div>
-    <div style="border-top:1px solid #eee;padding:16px 32px;font-size:12px;color:#625850;text-align:center">${studio.legalName} · ${studio.phoneDisplay} · ${studio.email}<br>No 15 Adewaku Avenue, Abayomi Bus Stop, Iwo Road, Ibadan</div>
-  </div></div>`;
+import { DEFAULT_TEMPLATES, fill, fillPlain, type Tpl, type TplKey } from './emailTemplates';
+import { brandedEmail as _branded } from './emailHtml';
+import { studio as _site } from './site';
+
+export async function getTemplates(): Promise<Record<TplKey, Tpl>> {
+  try {
+    const { dbConfigured, q } = await import('./db');
+    if (!dbConfigured()) return DEFAULT_TEMPLATES;
+    const row = (await q<{ v: string }>("SELECT v FROM settings WHERE k = 'emails'"))[0];
+    if (!row) return DEFAULT_TEMPLATES;
+    const saved = JSON.parse(row.v) as Partial<Record<TplKey, Partial<Tpl>>>;
+    return Object.fromEntries(Object.entries(DEFAULT_TEMPLATES).map(([k, d]) => [k, { ...d, ...(saved[k as TplKey] || {}) }])) as Record<TplKey, Tpl>;
+  } catch {
+    return DEFAULT_TEMPLATES;
+  }
+}
+
+// Sends one of the editable emails.
+export async function sendTemplate(key: TplKey, to: string, vars: Record<string, string>, extra: { rows?: [string, string][]; url?: string } = {}, replyTo?: string) {
+  const t = (await getTemplates())[key];
+  const v = { studio_phone: _site.phoneDisplay, ...vars };
+  return sendMail(to, fillPlain(t.subject, v), _branded({
+    heading: fillPlain(t.heading, v), intro: fill(t.intro, v), rows: extra.rows,
+    cta: t.button && extra.url ? { label: fillPlain(t.button, v), url: extra.url } : undefined,
+    note: t.note ? fill(t.note, v) : undefined,
+  }), replyTo);
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { notFound } from 'next/navigation';
 import Uploader from '@/components/admin/Uploader';
 import GalleryForm from '@/components/admin/GalleryForm';
@@ -15,6 +16,7 @@ const tabs = [
 const stageLabel = { draft: 'Draft · not shared', selection: 'Client choosing', finished: 'Delivered' } as const;
 
 export default async function ManageGallery({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string; new?: string }> }) {
+  await requireArea('galleries');
   const id = Number((await params).id);
   const { tab = 'unedited', new: isNew } = await searchParams;
   const g = await getGallery(id);

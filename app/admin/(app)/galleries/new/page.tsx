@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import GalleryForm from '@/components/admin/GalleryForm';
 import { createGalleryAction } from '@/app/admin/actions';
 
-export default function NewGallery() {
+export default async function NewGallery() {
+  await requireArea('galleries');
   return (
     <>
       <div className="a-head">

@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import { requireArea } from '@/lib/team';
 import { listClients, longDate } from '@/lib/studio';
 
 const filters = [['all', 'All'], ['active', 'Active'], ['delivered', 'Delivered'], ['imported', 'Imported']] as const;
 
 export default async function ClientsPage({ searchParams }: { searchParams: Promise<{ q?: string; f?: string }> }) {
+  await requireArea('clients');
   const { q = '', f = 'all' } = await searchParams;
   const rows = await listClients(q.trim(), f);
   return (
