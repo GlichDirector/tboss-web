@@ -6,8 +6,8 @@ Built with Next.js. Hosted on Hostinger (Node.js web app), deployed from this Gi
 
 ## Build phases
 
-1. **Public site** (this version): Home, Work, Journal, Story pages, About, Contact form, gallery sign-in page, privacy page, sitemap and Google structured data.
-2. Client galleries: Google sign-in, uploads to Cloudflare R2, Unedited / Edited folders, selection, download tracking.
+1. **Public site** (done): Home, Work, Journal, Story pages, About, Contact form, gallery sign-in page, privacy page, sitemap and Google structured data.
+2. **Client galleries** (done): Google sign-in, uploads to Cloudflare R2 with duplicate replace/skip, Unedited / Edited folders, cover photo, client selection with package limit, logged downloads, studio admin at /admin.
 3. Studio admin: clients, orders, invoices, payments, bookings, calendar, automatic emails.
 4. Page editor, email builder, AI Journal drafts from Instagram, team invites.
 
@@ -24,3 +24,10 @@ Built with Next.js. Hosted on Hostinger (Node.js web app), deployed from this Gi
 - Environment variables: see `.env.example`. Add them in Hostinger, never in GitHub.
 
 Without `RESEND_API_KEY` the contact form still works and records enquiries in the app log instead of emailing them.
+
+## Phase 2 notes
+
+- Studio admin: `/admin`. Only Google accounts listed in `ADMIN_EMAILS` can sign in.
+- Database tables are created automatically on first use. Nothing to run by hand.
+- Cloudflare R2 needs a CORS rule so browsers can upload: allowed origin = the site address, methods PUT and GET, header Content-Type.
+- Local testing: `STORAGE_DRIVER=local` keeps photos on disk, and `DEV_LOGIN=1` allows test sign-in, but only when `SITE_URL` is a localhost address.
