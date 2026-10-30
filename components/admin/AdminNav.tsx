@@ -13,7 +13,8 @@ const groups: { title: string; items: { href: string; label: string; area: Area;
   ] },
   { title: 'Website', items: [
     { href: '/admin/website', label: 'Pages & design', area: 'website' }, { href: '/admin/journal', label: 'Journal', area: 'website' },
-    { href: '/admin/work', label: 'Work', area: 'website' }, { href: '/admin/emails', label: 'Emails', area: 'website' },
+    { href: '/admin/work', label: 'Work', area: 'website' }, { href: '/admin/analytics', label: 'Analytics', area: 'website' },
+    { href: '/admin/emails', label: 'Emails', area: 'website' },
   ] },
   { title: 'Studio', items: [{ href: '/admin/settings', label: 'Settings', area: 'settings' }, { href: '/admin/team', label: 'Team', area: 'settings' }] },
 ];

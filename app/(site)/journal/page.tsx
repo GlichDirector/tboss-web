@@ -6,7 +6,8 @@ import SubscribeForm from '@/components/SubscribeForm';
 import { formatDate, readMinutes } from '@/lib/content';
 import { publishedStories } from '@/lib/journal';
 
-export const revalidate = 300;
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Journal · Stories behind the sessions',

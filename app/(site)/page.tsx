@@ -7,7 +7,8 @@ import { getContent } from '@/lib/siteContent';
 import { publishedStories, workPhotos } from '@/lib/journal';
 import { studio } from '@/lib/site';
 
-export const revalidate = 300;
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const [c, allStories, photos] = await Promise.all([getContent(), publishedStories(), workPhotos()]);

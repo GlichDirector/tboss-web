@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import WorkPageBody from '@/components/WorkPageBody';
 import { getContent } from '@/lib/siteContent';
 
-export const revalidate = 300;
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: 'Portfolio · Portrait, event and heritage photography in Ibadan',
   description: 'Portraits, weddings, events and heritage portraits by Tboss Photography, a female-led photography studio in Ibadan, Oyo State.',

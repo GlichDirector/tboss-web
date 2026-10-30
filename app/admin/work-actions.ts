@@ -28,7 +28,7 @@ export async function workUploadUrlsAction(count: number, ext: 'webp' | 'jpg') {
   }));
 }
 
-export type PostedPhoto = { base: string; ext: 'webp' | 'jpg'; width: number; height: number; blur: string };
+export type PostedPhoto = { base: string; ext: 'webp' | 'jpg'; width: number; height: number; blur: string; inWork: boolean };
 
 // Step 2: save the post. With an article, the AI writes a draft story and the photos wait
 // (hidden) until that story is published. Without one, the photos go live on Work at once.
@@ -36,15 +36,17 @@ export async function publishWorkAction(input: { category: string; note: string;
   await assertArea('website');
   const category = CATS.includes(input.category) ? input.category : 'Portraits';
   const photos = input.photos.slice(0, 12).filter((p) => BASE.test(p.base) && (p.ext === 'webp' || p.ext === 'jpg'))
-    .map((p) => ({ ...p, width: Math.round(p.width) || 1600, height: Math.round(p.height) || 2000, blur: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]{0,4000}$/.test(p.blur) ? p.blur : '' }));
+    .map((p) => ({ ...p, inWork: p.inWork !== false, width: Math.round(p.width) || 1600, height: Math.round(p.height) || 2000, blur: /^data:image\/jpeg;base64,[A-Za-z0-9+/=]{0,4000}$/.test(p.blur) ? p.blur : '' }));
   if (!photos.length) return { error: 'Add at least one photo.' };
   const note = input.note.trim().slice(0, 1500);
 
   if (!input.article) {
-    for (const p of photos) await addWorkPhoto({ category, media_base: p.base, ext: p.ext, width: p.width, height: p.height, alt: note ? note.slice(0, 280) : null, blur: p.blur || null, story_id: null, hidden: false });
+    const chosen = photos.filter((p) => p.inWork);
+    if (!chosen.length) return { error: 'Tick “On Work page” on at least one photo.' };
+    for (const p of chosen) await addWorkPhoto({ category, media_base: p.base, ext: p.ext, width: p.width, height: p.height, alt: note ? note.slice(0, 280) : null, blur: p.blur || null, story_id: null, hidden: false });
     revalidatePath('/', 'layout');
     await pingSearchEngines(['/work', catSlug(category)]);
-    return { ok: `${photos.length} photo${photos.length === 1 ? ' is' : 's are'} now on the Work page under ${category}.` };
+    return { ok: `${chosen.length} photo${chosen.length === 1 ? ' is' : 's are'} now on the Work page under ${category}.` };
   }
 
   if (!aiConfigured()) return { error: 'AI isn’t connected yet. Add ANTHROPIC_API_KEY in Hostinger, or untick “Write a Journal article”.' };
@@ -60,7 +62,7 @@ export async function publishWorkAction(input: { category: string; note: string;
 
   const alts = photos.map((_, i) => (drafted.alts[i] || drafted.alts[0] || `${category} photograph by Tboss Photography, Ibadan`).slice(0, 280));
   for (const [i, p] of photos.entries()) {
-    await addWorkPhoto({ category, media_base: p.base, ext: p.ext, width: p.width, height: p.height, alt: alts[i], blur: p.blur || null, story_id: drafted.storyId, hidden: true });
+    await addWorkPhoto({ category, media_base: p.base, ext: p.ext, width: p.width, height: p.height, alt: alts[i], blur: p.blur || null, story_id: drafted.storyId, hidden: true, in_work: p.inWork });
   }
   // Place the remaining photos through the article, one after every two paragraphs.
   const src = (p: PostedPhoto) => `/media/${p.base}/w1600.${p.ext}`;
@@ -74,7 +76,7 @@ export async function publishWorkAction(input: { category: string; note: string;
   return { ok: 'Article drafted.', storyId: drafted.storyId };
 }
 
-export async function workPhotoAction(id: number, f: { category?: string; hidden?: boolean; alt?: string }) {
+export async function workPhotoAction(id: number, f: { category?: string; hidden?: boolean; alt?: string; in_work?: boolean }) {
   await assertArea('website');
   if (f.category && !CATS.includes(f.category)) return;
   await setWorkPhoto(id, f);

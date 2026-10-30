@@ -5,8 +5,8 @@ import { publishedStory } from '@/lib/journal';
 
 type Props = { params: Promise<{ slug: string }> };
 
-export const revalidate = 300;
-export const generateStaticParams = async () => [];
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const story = await publishedStory((await params).slug);

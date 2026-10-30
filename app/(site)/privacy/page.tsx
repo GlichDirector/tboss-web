@@ -17,6 +17,7 @@ export default function PrivacyPage() {
       <p>{studio.legalName} (“we”) collects only what we need to plan your session, deliver your photos and keep in touch. We follow the Nigeria Data Protection Act 2023.</p>
       <h2 style={h2}>What we collect</h2>
       <p>Your name, email address, phone number, session details and any message you send us; your photographs; and, if you sign in to a client gallery, your Google name and email. We also record which photos are downloaded and by which signed-in email, so we can support you.</p>
+      <p>To understand which pages are useful, we count website visits: the page, the approximate country, the type of device and the website you came from. We don’t use cookies or advertising trackers for this, we don’t store your IP address, and these records are deleted after 13 months.</p>
       <h2 style={h2}>How we use it</h2>
       <p>To reply to enquiries, send invoices and booking confirmations, deliver your galleries, and, only if you subscribe, send new Journal stories. We never sell your information.</p>
       <h2 style={h2}>Your photographs</h2>

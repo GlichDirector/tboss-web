@@ -4,9 +4,8 @@ import WorkPageBody from '@/components/WorkPageBody';
 import { workPhotos } from '@/lib/journal';
 import { workCategories } from '@/lib/workCategories';
 
-export const revalidate = 300;
-export const dynamicParams = false;
-export const generateStaticParams = () => Object.keys(workCategories).map((category) => ({ category }));
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: { params: Promise<{ category: string }> }): Promise<Metadata> {
   const c = workCategories[(await params).category];

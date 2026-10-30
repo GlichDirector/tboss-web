@@ -251,11 +251,28 @@ const schema = [
     KEY by_cat (category, hidden),
     KEY by_story (story_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // ---- Website visits (Analytics). No cookies, no IP addresses stored. ----
+  `CREATE TABLE IF NOT EXISTS page_views (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    day DATE NOT NULL,
+    path VARCHAR(255) NOT NULL,
+    visitor CHAR(16) NOT NULL,
+    new_visitor TINYINT(1) NOT NULL DEFAULT 0,
+    country VARCHAR(60) NOT NULL DEFAULT 'Unknown',
+    city VARCHAR(60) NULL,
+    device VARCHAR(10) NOT NULL DEFAULT 'Desktop',
+    browser VARCHAR(20) NOT NULL DEFAULT 'Other',
+    source VARCHAR(40) NOT NULL DEFAULT 'Direct',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_day (day),
+    KEY by_path (path, day)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
 ];
 
 // Changes to tables that already exist on the live site. Each runs once; "already there" is ignored.
 const changes = [
   'ALTER TABLE galleries ADD COLUMN order_id INT NULL',
+  'ALTER TABLE work_photos ADD COLUMN in_work TINYINT(1) NOT NULL DEFAULT 1',
 ];
 
 async function ready() {

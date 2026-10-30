@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 import { dbConfigured, q } from './db';
 import { faqs as defaultFaqs, heroSlides, services as defaultServices, steps as defaultSteps, values as defaultValues } from './content';
 
@@ -75,7 +76,7 @@ function merge<T>(base: T, over: unknown): T {
   return out as T;
 }
 
-export async function getContent(): Promise<SiteContent> {
+export const getContent = cache(async (): Promise<SiteContent> => {
   if (!dbConfigured()) return defaultContent;
   try {
     const row = (await q<{ v: string }>("SELECT v FROM settings WHERE k = 'site'"))[0];
@@ -83,4 +84,4 @@ export async function getContent(): Promise<SiteContent> {
   } catch {
     return defaultContent;
   }
-}
+});

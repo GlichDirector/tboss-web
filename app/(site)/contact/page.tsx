@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/contact' },
 };
 
-export const revalidate = 300;
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export default async function ContactPage() {
   const c = (await getContent()).contact;

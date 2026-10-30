@@ -10,7 +10,8 @@ export const metadata: Metadata = {
   alternates: { canonical: '/about' },
 };
 
-export const revalidate = 300;
+// Rendered fresh on every visit, so changes made in the admin show immediately.
+export const dynamic = 'force-dynamic';
 
 export default async function AboutPage() {
   const a = (await getContent()).about;
