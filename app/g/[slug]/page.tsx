@@ -4,12 +4,29 @@ import GalleryView from '@/components/GalleryView';
 import { galleryAccess } from '@/lib/access';
 import { coverUrl, favouriteIds, latestSelection, listPhotos } from '@/lib/galleries';
 import { formatDate } from '@/lib/content';
-import { studio } from '@/lib/site';
+import { siteUrl, studio } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Your gallery', robots: { index: false, follow: false } };
-
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ k?: string }> };
+
+// Link previews (WhatsApp, iMessage, email) show this gallery's own cover photo and title.
+// Only someone holding the private link sees them; the page is never indexed.
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const { k = '' } = await searchParams;
+  const robots = { index: false, follow: false };
+  const a = k ? await galleryAccess(slug, k).catch(() => null) : null;
+  if (!a) return { title: 'Your gallery', robots };
+  const g = a.gallery;
+  const title = `${g.title} · ${studio.name}`;
+  const description = `${g.client_name}, your private photo gallery from ${studio.name} is ready. Tap to view your photos.`;
+  const image = { url: `${siteUrl}/g/${slug}/cover?k=${encodeURIComponent(k)}`, width: 1200, alt: g.title };
+  return {
+    title: { absolute: title }, description, robots,
+    openGraph: { type: 'website', title, description, url: `${siteUrl}/g/${slug}?k=${encodeURIComponent(k)}`, siteName: studio.name, images: [image] },
+    twitter: { card: 'summary_large_image', title, description, images: [image.url] },
+  };
+}
 
 export default async function ClientGallery({ params, searchParams }: Props) {
   const { slug } = await params;

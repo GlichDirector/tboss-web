@@ -118,7 +118,8 @@ export async function listPhotos(galleryId: number, folder: Folder): Promise<Pho
   })));
 }
 
-export async function coverUrl(g: Gallery) {
+// The storage key of the gallery's cover photo (the one chosen as cover, or the first photo).
+export async function coverKey(g: Gallery, size: 'web' | 'thumb' = 'web') {
   let id = g.cover_photo_id;
   let folder: Folder = 'unedited';
   if (id) {
@@ -130,7 +131,12 @@ export async function coverUrl(g: Gallery) {
     if (!first) return null;
     id = first.id; folder = first.folder;
   }
-  return viewUrl(photoKey(g.id, folder, id, 'web'));
+  return photoKey(g.id, folder, id, size);
+}
+
+export async function coverUrl(g: Gallery) {
+  const key = await coverKey(g);
+  return key ? viewUrl(key) : null;
 }
 
 export async function existingNames(galleryId: number, folder: Folder) {
