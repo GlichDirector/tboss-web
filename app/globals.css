@@ -542,3 +542,8 @@ textarea.input { padding: 12px 14px; min-height: 0; resize: vertical; }
 .an-bars .an-head span:first-child { text-align: left; }
 .an-stats strong { font-family: var(--sans, inherit); font-weight: 600; font-variant-numeric: tabular-nums; font-size: 32px; }
 .an-col { max-width: 64px; }
+.a-selset { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 10px; background: #FBF8F3; border: 1px solid rgba(31,26,22,0.08); }
+.a-selset .a-names { margin: 0; }
+.a-selset-extra { background: #FBF1E6; border-color: #EBD3A9; }
+.g-sec { margin: 0; font-family: var(--sans); font-weight: 600; font-size: 19px; color: #F3EEE6; }
+.m-extra { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 3px 10px; border-radius: 999px; background: #E9C9A8; color: #1F1A16; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; pointer-events: none; }

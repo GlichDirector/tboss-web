@@ -10,7 +10,7 @@ type Props = {
   slug: string; accessKey: string; title: string; clientName: string; meta: string; cover: string | null;
   stage: 'draft' | 'selection' | 'finished'; admin: boolean; user: { email: string; name: string } | null;
   unedited: P[]; edited: P[]; initialFavs: number[]; limit: number; extraPrice: string | null;
-  chooseBy: string | null; expires: string | null; sentAt: string | null;
+  chooseBy: string | null; expires: string | null; sentAt: string | null; registered?: boolean;
 };
 
 const Heart = ({ on }: { on: boolean }) => (
@@ -29,6 +29,8 @@ export default function GalleryView(p: Props) {
   const [sent, setSent] = useState<string | null>(p.sentAt);
   const [open, setOpen] = useState<number | null>(null);
   const [busy, start] = useTransition();
+  const [fullPopup, setFullPopup] = useState(false);
+  const [fullSeen, setFullSeen] = useState(false);
 
   const here = `/g/${p.slug}${p.accessKey ? `?k=${encodeURIComponent(p.accessKey)}` : ''}`;
   const signInHref = `/api/auth/google?next=${encodeURIComponent(here)}`;
@@ -37,11 +39,24 @@ export default function GalleryView(p: Props) {
   const photos = folder === 'edited' ? p.edited : p.unedited;
   const shown = favView ? photos.filter((x) => favs.includes(x.id)) : photos;
   const folderFavs = photos.filter((x) => favs.includes(x.id)).length;
+  // Picks in the order they were hearted: the first ones fill the package, the rest are extras.
+  const uneditedIds = useMemo(() => new Set(p.unedited.map((x) => x.id)), [p.unedited]);
+  const picks = favs.filter((id) => uneditedIds.has(id));
+  const extraIds = new Set(p.limit > 0 ? picks.slice(p.limit) : []);
+  const extraCount = extraIds.size;
+  const priceNum = Number((p.extraPrice || '').replace(/[^\d.]/g, ''));
+  const extraFee = priceNum && extraCount ? `${(p.extraPrice || '').trim().match(/^[^\d\s]+/)?.[0] || ''}${(priceNum * extraCount).toLocaleString('en-NG')}` : null;
   const canDownload = folder === 'edited' && (delivered || p.admin);
 
   const heart = useCallback((id: number) => {
     if (!p.user) { setPrompt('fav'); return; }
     if (selecting && sent) { setToast('Your selection was sent to the studio. Message us if you need a change.'); return; }
+    const adding = !favs.includes(id);
+    if (adding && selecting && p.limit > 0) {
+      const count = picks.length + 1;
+      if (count === p.limit && !fullSeen) { setFullPopup(true); setFullSeen(true); }
+      else if (count > p.limit) setToast(`Added to your Extra selection${p.extraPrice ? ` (${p.extraPrice} per photo)` : ''}. You now have ${count - p.limit} extra photo${count - p.limit > 1 ? 's' : ''}.`);
+    }
     setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
     start(async () => {
       const r = await toggleFav(p.slug, p.accessKey, id);
@@ -49,7 +64,7 @@ export default function GalleryView(p: Props) {
       else if (r.favs) setFavs(r.favs);
       else if (r.error) setToast(r.error);
     });
-  }, [p.user, p.slug, p.accessKey, selecting, sent]);
+  }, [p.user, p.slug, p.accessKey, p.limit, p.extraPrice, selecting, sent, favs, picks.length, fullSeen]);
 
   const download = (id: number) => {
     if (!p.user) { setPrompt('download'); return; }
@@ -136,18 +151,18 @@ export default function GalleryView(p: Props) {
               <span style={{ fontSize: 13, color: '#C9C0B4' }}>
                 {sent
                   ? `Sent ${sent === 'today' ? 'today' : `on ${sent}`}. We’ll email you when your edited photos are ready.`
-                  : [p.limit ? `Your package includes ${p.limit} photos.` : '', p.extraPrice ? `Extra picks are ${p.extraPrice} each.` : '', p.chooseBy ? `Please choose by ${p.chooseBy}.` : ''].filter(Boolean).join(' ') || 'Tap the heart on your favourites, then press Send selection.'}
+                  : [p.limit ? `Your package includes ${p.limit} photos.` : '', p.extraPrice ? `You can pick more as extras at ${p.extraPrice} each.` : '', p.chooseBy ? `Please choose by ${p.chooseBy}.` : '', p.registered ? 'Your hearts are saved as you go and reach the studio even if you forget to press Send.' : ''].filter(Boolean).join(' ') || 'Tap the heart on your favourites, then press Send selection.'}
               </span>
             </div>
             {p.limit > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 220, flex: '0 1 280px' }}>
                 <div style={{ flex: 1, height: 8, borderRadius: 999, background: 'rgba(243,238,230,0.14)', overflow: 'hidden' }}><div style={{ height: 8, width: `${pct}%`, background: '#D6A77A' }} /></div>
-                <strong style={{ whiteSpace: 'nowrap' }}>{folderFavs} of {p.limit}</strong>
+                <strong style={{ whiteSpace: 'nowrap' }}>{Math.min(picks.length, p.limit)} of {p.limit}{extraCount ? ` + ${extraCount} extra` : ''}</strong>
               </div>
             )}
-            {p.limit > 0 && folderFavs > p.limit && (
+            {p.limit > 0 && extraCount > 0 && (
               <span style={{ flexBasis: '100%', fontSize: 13, color: '#E9C9A8' }}>
-                {folderFavs - p.limit} extra photo{folderFavs - p.limit > 1 ? 's' : ''}{p.extraPrice ? ` at ${p.extraPrice} each` : ''}. You can remove a heart to stay within your package.
+                + {extraCount} extra photo{extraCount > 1 ? 's' : ''} in your Extra selection{p.extraPrice ? ` at ${p.extraPrice} each` : ''}{extraFee ? ` = ${extraFee}` : ''}. Remove a heart any time to drop an extra.
               </span>
             )}
           </div>
@@ -166,22 +181,32 @@ export default function GalleryView(p: Props) {
         ) : shown.length === 0 ? (
           <p className="g-empty">{favView ? (selecting ? 'No photos selected yet. Tap the heart on the photos you want edited.' : 'No favourites yet. Tap the heart on any photo to save it here.') : 'Photos are on their way.'}</p>
         ) : (
-          <div className="masonry">
-            {shown.map((ph) => {
-              const on = favs.includes(ph.id);
-              return (
-                <div key={ph.id} className="m-item" style={{ aspectRatio: `${ph.width || 4} / ${ph.height || 5}`, outline: selecting && on ? '3px solid #D6A77A' : undefined }}>
-                  <button type="button" className="m-open" onClick={() => setOpen(ph.id)} aria-label={`Open ${ph.filename}`}>
-                    <img src={ph.thumb} alt={ph.filename} loading="lazy" />
-                  </button>
-                  <button type="button" className="m-heart" aria-pressed={on} aria-label={`${on ? 'Remove' : 'Add'} ${ph.filename} ${selecting ? 'from your selection' : 'from favourites'}`} onClick={() => heart(ph.id)} style={{ color: on ? '#D6A77A' : '#F3EEE6' }}>
-                    <Heart on={on} />
-                  </button>
-                  {canDownload && <button type="button" className="m-down" aria-label={`Download ${ph.filename}`} onClick={() => download(ph.id)}><Down /></button>}
-                </div>
-              );
-            })}
-          </div>
+          (selecting && favView && p.limit > 0 ? [
+            { title: `Package selection · ${Math.min(picks.length, p.limit)} of ${p.limit}`, list: shown.filter((x) => !extraIds.has(x.id)) },
+            { title: `Extra selection · ${extraCount}${p.extraPrice ? ` × ${p.extraPrice}` : ''}${extraFee ? ` = ${extraFee}` : ''}`, list: shown.filter((x) => extraIds.has(x.id)) },
+          ].filter((sec) => sec.list.length) : [{ title: '', list: shown }]).map((sec) => (
+            <div key={sec.title || 'all'} style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+              {sec.title && <h2 className="g-sec">{sec.title}</h2>}
+              <div className="masonry">
+                {sec.list.map((ph) => {
+                  const on = favs.includes(ph.id);
+                  const extra = selecting && extraIds.has(ph.id);
+                  return (
+                    <div key={ph.id} className="m-item" style={{ aspectRatio: `${ph.width || 4} / ${ph.height || 5}`, outline: selecting && on ? `3px solid ${extra ? '#E9C9A8' : '#D6A77A'}` : undefined }}>
+                      <button type="button" className="m-open" onClick={() => setOpen(ph.id)} aria-label={`Open ${ph.filename}`}>
+                        <img src={ph.thumb} alt={ph.filename} loading="lazy" />
+                      </button>
+                      {extra && <span className="m-extra">Extra</span>}
+                      <button type="button" className="m-heart" aria-pressed={on} aria-label={`${on ? 'Remove' : 'Add'} ${ph.filename} ${selecting ? 'from your selection' : 'from favourites'}`} onClick={() => heart(ph.id)} style={{ color: on ? '#D6A77A' : '#F3EEE6' }}>
+                        <Heart on={on} />
+                      </button>
+                      {canDownload && <button type="button" className="m-down" aria-label={`Download ${ph.filename}`} onClick={() => download(ph.id)}><Down /></button>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
         )}
       </section>
 
@@ -203,6 +228,20 @@ export default function GalleryView(p: Props) {
           </div>
           {idx > 0 && <button type="button" className="lb-nav lb-prev" aria-label="Previous photo" onClick={() => setOpen(shown[idx - 1].id)}><ChevronLeft size={22} /></button>}
           {idx < shown.length - 1 && <button type="button" className="lb-nav lb-next" aria-label="Next photo" onClick={() => setOpen(shown[idx + 1].id)}><ChevronRight size={22} /></button>}
+        </div>
+      )}
+
+      {fullPopup && (
+        <div className="lightbox" style={{ alignItems: 'center', justifyContent: 'center', padding: 24 }} onClick={(e) => { if (e.target === e.currentTarget) setFullPopup(false); }}>
+          <div role="dialog" aria-modal="true" aria-labelledby="fulltitle" className="g-modal">
+            <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#8A4B12' }}>{p.limit} of {p.limit} chosen</span>
+            <h2 id="fulltitle" className="serif" style={{ margin: 0, fontSize: 32, lineHeight: 1.1 }}>You’ve picked all the photos in your package.</h2>
+            <p style={{ margin: 0, color: '#625850', fontSize: 15 }}>
+              Love more of them? Keep tapping the heart. Any more photos go into your <strong>Extra selection</strong>{p.extraPrice ? <>, at <strong>{p.extraPrice}</strong> per photo</> : ''}, and the studio will add them to your invoice.
+            </p>
+            <button type="button" className="btn" onClick={() => setFullPopup(false)} style={{ width: '100%', background: '#1F1A16', color: '#F3EEE6' }}>Continue selecting extras</button>
+            <button type="button" onClick={() => { setFullPopup(false); submit(); }} style={{ border: '1px solid rgba(31,26,22,0.2)', background: '#fff', color: '#1F1A16', fontWeight: 600, cursor: 'pointer', minHeight: 48, borderRadius: 999 }}>I’m done, send my {p.limit} photos</button>
+          </div>
         </div>
       )}
 

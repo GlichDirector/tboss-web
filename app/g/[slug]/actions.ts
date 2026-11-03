@@ -1,7 +1,7 @@
 'use server';
 
 import { galleryAccess } from '@/lib/access';
-import { favouriteIds, getPhoto, submitSelection, toggleFavourite } from '@/lib/galleries';
+import { extraTotal, favouriteIds, getPhoto, splitPicks, submitSelection, toggleFavourite } from '@/lib/galleries';
 import { notifyStudio } from '@/lib/mail';
 
 type Result = { ok: boolean; error?: string; needsSignIn?: boolean; favs?: number[] };
@@ -29,9 +29,11 @@ export async function sendSelection(slug: string, key: string): Promise<Result> 
   }
   if (!ids.length) return { ok: false, error: 'Tap the heart on the photos you want edited, then send your selection.' };
   await submitSelection(a.gallery.id, a.user.email, ids);
+  const { pkg, extra } = splitPicks(ids, a.gallery.selection_limit);
+  const fee = extraTotal(a.gallery.extra_price, extra.length);
   await notifyStudio(
-    `${a.gallery.client_name} sent ${ids.length} picks`,
-    `<p>${a.user.email} sent a selection of ${ids.length} photos for <strong>${a.gallery.title}</strong>.</p><p>Open the gallery in the studio admin to see the file names.</p>`,
+    `${a.gallery.client_name} sent ${ids.length} picks${extra.length ? ` (${extra.length} extra)` : ''}`,
+    `<p>${a.user.email} sent a selection of ${ids.length} photos for <strong>${a.gallery.title}</strong>: ${pkg.length} in the package${extra.length ? ` and <strong>${extra.length} extra</strong>${fee ? ` (${fee} to add to the invoice)` : ''}` : ''}.</p><p>Open the gallery’s Selections tab in the studio admin to copy the file names.</p>`,
   );
   return { ok: true };
 }

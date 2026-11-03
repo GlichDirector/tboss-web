@@ -180,7 +180,8 @@ export async function deletePhoto(galleryId: number, photoId: number) {
 // ---------- favourites, selections, downloads ----------
 
 export async function favouriteIds(galleryId: number, email: string) {
-  const rows = await q<{ photo_id: number }>('SELECT photo_id FROM favourites WHERE gallery_id = ? AND email = ?', [galleryId, email.toLowerCase()]);
+  // In the order they were hearted: the first ones fill the package, later ones are extras.
+  const rows = await q<{ photo_id: number }>('SELECT photo_id FROM favourites WHERE gallery_id = ? AND email = ? ORDER BY created_at, photo_id', [galleryId, email.toLowerCase()]);
   return rows.map((r) => r.photo_id);
 }
 
@@ -191,21 +192,80 @@ export async function toggleFavourite(galleryId: number, photoId: number, email:
   return res.affectedRows === 0;
 }
 
-export async function submitSelection(galleryId: number, email: string, photoIds: number[]) {
-  await exec('INSERT INTO selections (gallery_id, email, photo_ids) VALUES (?,?,?)', [galleryId, email.toLowerCase(), photoIds.join(',')]);
+export async function submitSelection(galleryId: number, email: string, photoIds: number[], auto = false) {
+  await exec('INSERT INTO selections (gallery_id, email, photo_ids, auto) VALUES (?,?,?,?)', [galleryId, email.toLowerCase(), photoIds.join(','), auto ? 1 : 0]);
+}
+
+// Package picks are the first N hearted; anything after that is an extra (charged per photo).
+export function splitPicks<T>(ids: T[], limit: number) {
+  return limit > 0 ? { pkg: ids.slice(0, limit), extra: ids.slice(limit) } : { pkg: ids, extra: [] as T[] };
+}
+
+// "₦5,000" × 3 → "₦15,000". Returns null if the price isn't a plain amount.
+export function extraTotal(price: string | null, count: number) {
+  if (!price || !count) return null;
+  const n = Number(price.replace(/[^\d.]/g, ''));
+  if (!n) return null;
+  const sym = price.trim().match(/^[^\d\s]+/)?.[0] || '';
+  return `${sym}${(n * count).toLocaleString('en-NG')}`;
+}
+
+// Hearted unedited photos for one person, in hearting order.
+async function uneditedHearts(galleryId: number, email: string) {
+  return q<{ photo_id: number; created_at: string }>(
+    `SELECT f.photo_id, f.created_at FROM favourites f JOIN photos p ON p.id = f.photo_id
+     WHERE f.gallery_id = ? AND f.email = ? AND p.folder = 'unedited' ORDER BY f.created_at, f.photo_id`, [galleryId, email]);
 }
 
 export async function latestSelection(galleryId: number, email: string) {
   return (await q<{ submitted_at: string; photo_ids: string }>('SELECT submitted_at, photo_ids FROM selections WHERE gallery_id = ? AND email = ? ORDER BY id DESC LIMIT 1', [galleryId, email.toLowerCase()]))[0] || null;
 }
 
-export async function selectionsReport(galleryId: number) {
-  const rows = await q<{ id: number; email: string; photo_ids: string; submitted_at: string }>('SELECT * FROM selections WHERE gallery_id = ? ORDER BY id DESC', [galleryId]);
-  const names = new Map((await q<{ id: number; filename: string }>('SELECT id, filename FROM photos WHERE gallery_id = ?', [galleryId])).map((r) => [r.id, r.filename]));
+export type SelectionRow = { email: string; status: 'sent' | 'auto' | 'live'; when: string; pkg: string[]; extra: string[] };
+
+// What each client picked. Registered client emails count even if they never pressed Send:
+// their hearts show here straight away as "not sent yet".
+export async function selectionsReport(g: Gallery): Promise<SelectionRow[]> {
+  const rows = await q<{ id: number; email: string; photo_ids: string; submitted_at: string; auto: number }>('SELECT * FROM selections WHERE gallery_id = ? ORDER BY id DESC', [g.id]);
+  const names = new Map((await q<{ id: number; filename: string }>('SELECT id, filename FROM photos WHERE gallery_id = ?', [g.id])).map((r) => [r.id, r.filename]));
+  const name = (id: number) => names.get(id) || `(deleted photo ${id})`;
+  const out: SelectionRow[] = [];
   const seen = new Set<string>();
-  return rows
-    .filter((r) => (seen.has(r.email) ? false : (seen.add(r.email), true))) // latest per person
-    .map((r) => ({ email: r.email, submitted_at: r.submitted_at, files: r.photo_ids.split(',').filter(Boolean).map((id) => names.get(Number(id)) || `(deleted photo ${id})`) }));
+  for (const r of rows) {
+    if (seen.has(r.email)) continue; // latest per person
+    seen.add(r.email);
+    const { pkg, extra } = splitPicks(r.photo_ids.split(',').filter(Boolean).map(Number), g.selection_limit);
+    out.push({ email: r.email, status: r.auto ? 'auto' : 'sent', when: r.submitted_at, pkg: pkg.map(name), extra: extra.map(name) });
+  }
+  for (const email of emailsOf(g)) {
+    if (seen.has(email)) continue;
+    const hearts = await uneditedHearts(g.id, email);
+    if (!hearts.length) continue;
+    const { pkg, extra } = splitPicks(hearts.map((h) => h.photo_id), g.selection_limit);
+    out.push({ email, status: 'live', when: hearts[hearts.length - 1].created_at, pkg: pkg.map(name), extra: extra.map(name) });
+  }
+  return out;
+}
+
+// For the daily job: registered clients who hearted photos but never pressed Send.
+// After a quiet day (or once the choose-by date has passed) their hearts become their selection.
+export async function selectionsToAutoSend() {
+  const gs = await q<Gallery>("SELECT * FROM galleries WHERE stage = 'selection'");
+  const due: { gallery: Gallery; email: string; ids: number[] }[] = [];
+  const today = new Date(Date.now() + 3600000).toISOString().slice(0, 10);
+  for (const g of gs) {
+    if (isExpired(g)) continue;
+    for (const email of emailsOf(g)) {
+      if ((await q('SELECT id FROM selections WHERE gallery_id = ? AND email = ? LIMIT 1', [g.id, email])).length) continue;
+      const hearts = await uneditedHearts(g.id, email);
+      if (!hearts.length) continue;
+      const last = new Date(hearts[hearts.length - 1].created_at).getTime();
+      const quiet = Date.now() - last > 24 * 3600000;
+      const deadline = g.choose_by ? String(g.choose_by).slice(0, 10) < today : false;
+      if (quiet || deadline) due.push({ gallery: g, email, ids: hearts.map((h) => h.photo_id) });
+    }
+  }
+  return due;
 }
 
 export async function logDownload(galleryId: number, photoId: number, email: string) {

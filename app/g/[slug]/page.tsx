@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import GalleryView from '@/components/GalleryView';
 import { galleryAccess } from '@/lib/access';
-import { coverUrl, favouriteIds, latestSelection, listPhotos } from '@/lib/galleries';
+import { coverUrl, emailsOf, favouriteIds, latestSelection, listPhotos } from '@/lib/galleries';
 import { formatDate } from '@/lib/content';
 import { siteUrl, studio } from '@/lib/site';
 
@@ -76,6 +76,7 @@ export default async function ClientGallery({ params, searchParams }: Props) {
       chooseBy={g.choose_by ? formatDate(g.choose_by) : null}
       expires={g.expires_on ? formatDate(g.expires_on) : null}
       sentAt={sel ? formatDate(sel.submitted_at.slice(0, 10)) : null}
+      registered={Boolean(a.user && emailsOf(g).includes(a.user.email.toLowerCase()))}
     />
   );
 }

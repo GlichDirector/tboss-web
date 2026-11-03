@@ -273,6 +273,7 @@ const schema = [
 const changes = [
   'ALTER TABLE galleries ADD COLUMN order_id INT NULL',
   'ALTER TABLE work_photos ADD COLUMN in_work TINYINT(1) NOT NULL DEFAULT 1',
+  'ALTER TABLE selections ADD COLUMN auto TINYINT(1) NOT NULL DEFAULT 0',
 ];
 
 async function ready() {

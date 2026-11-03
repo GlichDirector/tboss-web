@@ -6,7 +6,7 @@ import GalleryForm from '@/components/admin/GalleryForm';
 import { CopyButton, DeleteGallery, PhotoTile, StageControls } from '@/components/admin/GalleryTools';
 import { updateGalleryAction } from '@/app/admin/actions';
 import { siteOrigin } from '@/lib/auth';
-import { downloadsReport, favouriteCounts, getGallery, listPhotos, selectionsReport } from '@/lib/galleries';
+import { downloadsReport, extraTotal, favouriteCounts, getGallery, listPhotos, selectionsReport, type Gallery } from '@/lib/galleries';
 import { formatDate } from '@/lib/content';
 import { orderIdForGallery } from '@/lib/studio';
 
@@ -69,7 +69,7 @@ export default async function ManageGallery({ params, searchParams }: { params: 
             </div>
           )}
 
-          {tab === 'selections' && <Selections id={id} />}
+          {tab === 'selections' && <Selections g={g} />}
           {tab === 'downloads' && <Downloads id={id} />}
           {tab === 'settings' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -87,20 +87,45 @@ export default async function ManageGallery({ params, searchParams }: { params: 
   );
 }
 
-async function Selections({ id }: { id: number }) {
-  const rows = await selectionsReport(id);
-  if (!rows.length) return <p className="a-sub">No selections sent yet. When a client presses “Send selection”, their picks appear here and you get an email.</p>;
+async function Selections({ g }: { g: Gallery }) {
+  const rows = await selectionsReport(g);
+  if (!rows.length) return <p className="a-sub">No picks yet. As soon as a client signed in with their registered email hearts photos, they show here, even before they press “Send selection”.</p>;
+  const status = { sent: 'Sent by the client', auto: 'Taken automatically from their hearts', live: 'Not sent yet · live from their hearts' } as const;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {rows.map((r) => (
-        <div className="a-card" key={r.email}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
-            <div><strong>{r.email}</strong><div className="a-sub">{r.files.length} photos · sent {formatDate(r.submitted_at.slice(0, 10))}</div></div>
-            <CopyButton text={r.files.join('\n')} label="Copy file names" done="Copied for Lightroom" />
+      <p className="a-sub" style={{ margin: 0 }}>
+        Hearts from the client emails on this gallery count as their selection. If they forget to press Send, their hearts are handed in automatically after a quiet day{g.choose_by ? ' or once the choose-by date passes' : ''}, and they get a confirmation email.
+        {g.selection_limit > 0 && ` The first ${g.selection_limit} hearted photos are the package; anything after that is an extra${g.extra_price ? ` at ${g.extra_price} each` : ''}.`}
+      </p>
+      {rows.map((r) => {
+        const fee = extraTotal(g.extra_price, r.extra.length);
+        return (
+          <div className="a-card" key={r.email} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div>
+              <strong>{r.email}</strong>{' '}
+              <span className={`a-badge ${r.status === 'live' ? 'a-selection' : 'a-finished'}`}>{status[r.status]}</span>
+              <div className="a-sub">{r.pkg.length + r.extra.length} photos · {r.status === 'live' ? 'last heart' : 'sent'} {formatDate(r.when.slice(0, 10))}</div>
+            </div>
+            <div className="a-selset">
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                <strong>{g.selection_limit > 0 ? `Package selection (${r.pkg.length} of ${g.selection_limit})` : `Selection (${r.pkg.length})`}</strong>
+                <CopyButton text={r.pkg.join('\n')} label="Copy file names" done="Copied for Lightroom" />
+              </div>
+              <p className="a-names">{r.pkg.join(', ')}</p>
+            </div>
+            {r.extra.length > 0 && (
+              <div className="a-selset a-selset-extra">
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <strong>Extra selection ({r.extra.length}){g.extra_price ? ` · ${g.extra_price} each${fee ? ` = ${fee}` : ''}` : ''}</strong>
+                  <CopyButton text={r.extra.join('\n')} label="Copy extra file names" done="Copied for Lightroom" />
+                </div>
+                <p className="a-names">{r.extra.join(', ')}</p>
+                {fee && <p className="a-hint" style={{ margin: 0 }}>Add {fee} for extra photos to the client’s invoice.</p>}
+              </div>
+            )}
           </div>
-          <p className="a-names">{r.files.join(', ')}</p>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
