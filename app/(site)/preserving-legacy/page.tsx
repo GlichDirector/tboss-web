@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Preserving Legacy · Nominate an elder for a heritage portrait',
-  description: 'Nominate a parent, grandparent or elder aged 80+ in Southwest Nigeria for a sponsored heritage portrait and film session with Tboss Photography, and have their story told.',
+  description: 'Nominate a parent, grandparent or elder aged 80+ in Southwest Nigeria for a fully sponsored heritage portrait and film session with Tboss Photography. Families pay nothing.',
   alternates: { canonical: '/preserving-legacy' },
   openGraph: { title: 'Preserving Legacy · Tboss Photography', description: 'Nominate an elder aged 80+ in Southwest Nigeria to be photographed, filmed and have their story told.', images: [{ url: '/photos/headwrap-elder/w1600.webp' }] },
 };
@@ -33,7 +33,7 @@ export default async function PreservingLegacy() {
   return (
     <>
       <section className="band-dark lg-hero">
-        <div className="wrap split" style={{ paddingTop: 72, paddingBottom: 72 }}>
+        <div className="wrap split lg-hero-in">
           <div className="text">
             <p className="eyebrow" style={{ color: '#E9C9A8' }}>{c.heroEyebrow}</p>
             <h1 className="h-display" style={{ fontSize: 'clamp(44px, 6vw, 84px)' }}>{c.heroTitle} <em>{c.heroTitleItalic}</em></h1>
@@ -42,7 +42,7 @@ export default async function PreservingLegacy() {
               {c.open ? <a href="#nominate" className="btn btn-light">{c.ctaLabel}</a> : <span className="lg-closed">{c.closedText}</span>}
               <a href="#why" className="btn btn-outline-light">Read our story</a>
             </div>
-            <p className="lg-facts"><span>Aged 80+</span><span>Southwest Nigeria</span><span>Photos &amp; film</span></p>
+            <p className="lg-facts"><span>Fully sponsored</span><span>Aged 80+</span><span>Southwest Nigeria</span><span>Photos &amp; film</span></p>
           </div>
           <div className="media lg-hero-img">
             <Pic src={c.heroImage} alt="Heritage portrait of an elder by Tboss Photography" priority sizes="(max-width: 760px) 100vw, 45vw" />
@@ -70,7 +70,7 @@ export default async function PreservingLegacy() {
               <div key={i} className="lg-card"><span className="num">{String(i + 1).padStart(2, '0')}</span><h3>{o.title}</h3><p>{o.body}</p></div>
             ))}
           </div>
-          <p style={{ margin: 0, fontWeight: 600 }}>{c.feeText ? `Sponsorship: ${c.feeText}` : 'The sponsorship fee is shared when we call you about your nomination.'}</p>
+          {c.freeText && <p className="lg-free">{c.freeText}</p>}
         </div>
       </section>
 
@@ -117,7 +117,7 @@ export default async function PreservingLegacy() {
 
       <section className="wrap" id="nominate" style={{ paddingTop: 40, paddingBottom: 96, scrollMarginTop: 96 }}>
         {c.open ? (
-          <NominationForm title={c.formTitle} intro={c.formIntro} feeText={c.feeText} rightsText={c.rightsText} />
+          <NominationForm title={c.formTitle} intro={c.formIntro} rightsText={c.rightsText} />
         ) : (
           <div className="form-card lg-done"><h2 className="serif" style={{ margin: 0, fontSize: 40 }}>{c.formTitle}</h2><p className="lede" style={{ margin: 0 }}>{c.closedText}</p></div>
         )}

@@ -13,7 +13,7 @@ function isCurrent(pathname: string, href: string) {
 export default function Nav() {
   const pathname = usePathname() || '/';
   const menu = useRef<HTMLDetailsElement>(null);
-  const overlay = pathname === '/';
+  const overlay = pathname === '/' || pathname === '/preserving-legacy';
 
   // Close the phone menu after moving to another page.
   useEffect(() => {

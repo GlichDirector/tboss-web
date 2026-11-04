@@ -35,7 +35,7 @@ export type SiteContent = {
     open: boolean; closedText: string;
     heroEyebrow: string; heroTitle: string; heroTitleItalic: string; heroText: string; heroImage: string; ctaLabel: string;
     whyTitle: string; whyText: string; whyImage: string; whyQuote: string;
-    offerTitle: string; offers: Card[]; feeText: string;
+    offerTitle: string; offers: Card[]; freeText: string;
     showStories: boolean; storiesTitle: string; storiesText: string;
     stepsTitle: string; steps: Card[];
     whoTitle: string; who: Card[];
@@ -81,7 +81,7 @@ export const defaultContent: SiteContent = {
     closedText: 'Nominations are closed for now. Follow us on Instagram to hear when the next round opens.',
     heroEyebrow: 'The Heritage & Legacy Project',
     heroTitle: 'Preserving Legacy:', heroTitleItalic: 'honour an elder while they are still with us.',
-    heroText: 'Nominate a parent, grandparent or elder aged 80 or above in Southwest Nigeria. Sponsor their session, and we will photograph and film them in one beautiful look, and tell their story for the generations after them.',
+    heroText: 'Nominate a parent, grandparent or elder aged 80 or above in Southwest Nigeria. The session is fully sponsored, so the family pays nothing. We will photograph and film them in one beautiful look, and tell their story for the generations after them.',
     heroImage: '/photos/headwrap-elder/w1600.webp', ctaLabel: 'Nominate an elder',
     whyTitle: 'Why we started preserving legacy',
     whyText: 'Every family has an elder whose face holds a whole history: the songs, the proverbs, the journeys, the way they tie their gele. Too often the only photographs we have of them are old, faded or taken in a hurry.\n\nWe started the Heritage & Legacy Project to change that. Alongside our client work, we photograph elders, old homes and traditions before they fade, so their stories outlive us and their great-grandchildren can see exactly who they were.\n\nPreserving Legacy opens that work to you. Tell us about someone you love, and we will give them the dignity of a proper portrait session and a story told with care.',
@@ -92,12 +92,12 @@ export const defaultContent: SiteContent = {
       { title: 'A short film', body: 'Video of them in that look, with their voice and their story where they are happy to share it.' },
       { title: 'Their story, told', body: 'We listen to the family and write their story, to publish on our Journal, with the media and in photography competitions.' },
     ],
-    feeText: '',
+    freeText: 'Fully sponsored: the elder and their family do not pay anything.',
     showStories: true, storiesTitle: 'Stories we have preserved', storiesText: 'Some of the elders we have photographed so far.',
     stepsTitle: 'How it works',
     steps: [
       { title: 'Nominate', body: 'Tell us about your elder in the form below. It takes about five minutes.' },
-      { title: 'We call you', body: 'We read every nomination and call to talk through the story, the look, the date and the sponsorship.' },
+      { title: 'We call you', body: 'We read every nomination and call to talk through their story, the look and a date that suits them.' },
       { title: 'The shoot', body: 'We come to them or welcome them to our studio, and work slowly and at their pace.' },
       { title: 'Their story lives on', body: 'We edit the photos and film and publish their story for the world to see.' },
     ],
@@ -106,13 +106,13 @@ export const defaultContent: SiteContent = {
       { title: 'Aged 80 or above', body: 'A parent, grandparent, relative or respected elder in your community.' },
       { title: 'In Southwest Nigeria', body: 'Living in Lagos, Ogun, Oyo, Osun, Ondo or Ekiti State.' },
       { title: 'Happy to take part', body: 'They, and their family, agree to be photographed, filmed and to share their story.' },
-      { title: 'Sponsored', body: 'You, or another family member, sponsor the shoot.' },
+      { title: 'Free for the family', body: 'The session is fully sponsored. Nobody pays a thing.' },
     ],
     rightsTitle: 'Using the photographs and story',
     rightsText: 'Preserving Legacy exists to share these stories widely. By nominating, you confirm that the elder and their family agree that Tboss Photography may use the photographs, videos and story without limit: on our website and social media, in print, in features with newspapers, magazines, broadcasters and other media, and in photography competitions and exhibitions. We will always present your elder with respect.',
     formTitle: 'Nominate an elder', formIntro: 'Tell us about them in your own words. We read every nomination and will call you.',
     faqs: [
-      { q: 'Who pays for the session?', a: 'The person who nominates, or another family member, sponsors the shoot. We share the fee and what it covers when we call you.' },
+      { q: 'Does it cost anything?', a: 'No. Preserving Legacy is fully sponsored, so the elder and their family do not pay anything for the photos, the film or the story.' },
       { q: 'Can you come to their home?', a: 'Yes, anywhere in Southwest Nigeria: Lagos, Ogun, Oyo, Osun, Ondo and Ekiti. We will agree the location when we call.' },
       { q: 'What if they cannot stand or walk far?', a: 'That is fine. We work slowly, with seating and breaks, and plan everything around their comfort.' },
       { q: 'Does every nomination get a shoot?', a: 'We read every nomination and call the families we can photograph. Sessions are limited, so we may not be able to say yes to everyone.' },

@@ -43,7 +43,7 @@ const SCHEMA: Record<string, { label: string; path: string; sections: Section[] 
     { title: 'Nominations', fields: [
       { key: 'open', label: 'Accepting nominations', type: 'toggle' },
       { key: 'closedText', label: 'Message when nominations are closed', type: 'textarea' },
-      { key: 'feeText', label: 'Sponsorship fee shown on the page', type: 'text', help: 'e.g. ₦150,000 per elder. Leave empty to say you will share the fee when you call.' },
+      { key: 'freeText', label: 'Line about it being free', type: 'text', help: 'Shown under “What the session includes”. Leave empty to hide.' },
     ] },
     { title: 'Top of the page', fields: [
       { key: 'heroEyebrow', label: 'Small line above the headline', type: 'text' },

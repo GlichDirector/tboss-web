@@ -30,7 +30,7 @@ export async function nominateElder(_prev: NominationState, form: FormData): Pro
     relationship: clean(form.get('relationship'), 80),
     phone: clean(form.get('phone'), 40),
     email: clean(form.get('email'), 200),
-    sponsor: clean(form.get('sponsor'), 20) || 'me',
+    sponsor: 'free',
     found_via: clean(form.get('found_via'), 60) || null,
   };
 
@@ -47,18 +47,16 @@ export async function nominateElder(_prev: NominationState, form: FormData): Pro
   if (!isEmail(n.email)) return fail('email', 'Please check your email address.');
   if (form.get('consent_family') !== 'on') return fail('consent_family', 'Please confirm the elder and their family are happy to take part.');
   if (form.get('consent_rights') !== 'on') return fail('consent_rights', 'Please confirm you agree to how the photos, videos and story will be used.');
-  if (!['me', 'family', 'unsure'].includes(n.sponsor)) n.sponsor = 'me';
 
   let stored = false;
   if (dbConfigured()) {
     try { await saveNomination(n); stored = true; } catch (e) { console.error('Could not save nomination', e); }
   }
 
-  const sponsorLabel = ({ me: 'I will sponsor it', family: 'Another family member will sponsor it', unsure: 'Not sure yet' } as Record<string, string>)[n.sponsor] || 'Not sure yet';
   const rows: [string, string][] = [
     ['Elder', `${n.elder_name}${n.known_as ? ` (${n.known_as})` : ''}`], ['Sex', n.sex], ['Age', String(n.age)], ['Lives in', `${n.town}, ${n.state} State`],
     ['Languages', n.languages || ''], ['Known for', n.known_for || ''], ['Outfit idea', n.outfit || ''], ['Care notes', n.care_notes || ''],
-    ['Nominated by', `${n.nominator_name} (${n.relationship})`], ['Phone / WhatsApp', n.phone], ['Email', n.email], ['Sponsorship', sponsorLabel], ['Heard about it', n.found_via || ''],
+    ['Nominated by', `${n.nominator_name} (${n.relationship})`], ['Phone / WhatsApp', n.phone], ['Email', n.email], ['Heard about it', n.found_via || ''],
   ];
   const toStudio = await notifyStudio(
     `Legacy nomination: ${n.elder_name}, ${n.age}, ${n.town}`,
@@ -73,7 +71,7 @@ export async function nominateElder(_prev: NominationState, form: FormData): Pro
 
   await sendMail(n.email, `We’ve received your nomination for ${n.elder_name}`, brandedEmail({
     heading: 'Thank you for your nomination',
-    intro: `Thank you for telling us about <strong>${esc(n.elder_name)}</strong>. We read every Preserving Legacy nomination personally and will call you on ${esc(n.phone)} to talk about their story, the shoot and the sponsorship.`,
+    intro: `Thank you for telling us about <strong>${esc(n.elder_name)}</strong>. We read every Preserving Legacy nomination personally and will call you on ${esc(n.phone)} to talk about their story and the shoot. The session is fully sponsored, so there is nothing to pay.`,
     rows: [['Elder', n.elder_name], ['Age', String(n.age)], ['Lives in', `${n.town}, ${n.state} State`]],
     cta: { label: 'See stories we have preserved', url: `${siteOrigin()}/preserving-legacy` },
     note: `Questions? Call or WhatsApp ${studio.phoneDisplay}.`,

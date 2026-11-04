@@ -7,7 +7,7 @@ import { CheckIcon } from './Icons';
 
 const STATES = ['Lagos', 'Ogun', 'Oyo', 'Osun', 'Ondo', 'Ekiti'];
 
-export default function NominationForm({ title, intro, feeText, rightsText }: { title: string; intro: string; feeText: string; rightsText: string }) {
+export default function NominationForm({ title, intro, rightsText }: { title: string; intro: string; rightsText: string }) {
   const [state, action, pending] = useActionState<NominationState, FormData>(nominateElder, { ok: false });
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
@@ -22,7 +22,7 @@ export default function NominationForm({ title, intro, feeText, rightsText }: { 
       <div ref={doneRef} tabIndex={-1} role="status" className="form-card lg-done">
         <span className="ok-badge"><CheckIcon /></span>
         <h2 className="serif" style={{ margin: 0, fontSize: 42, lineHeight: 1.05 }}>Thank you for nominating {state.elder}.</h2>
-        <p className="lede" style={{ fontSize: 17, margin: 0 }}>We’ve sent a copy to {state.email}. We read every nomination personally and will call you to talk about their story, the shoot and the sponsorship.</p>
+        <p className="lede" style={{ fontSize: 17, margin: 0 }}>We’ve sent a copy to {state.email}. We read every nomination personally and will call you to talk about their story and the shoot. There is nothing to pay.</p>
         <p style={{ margin: 0, color: 'var(--muted)' }}>Can’t wait? Call or WhatsApp <a href={`tel:${studio.phoneIntl}`} style={{ color: 'var(--oxblood)', fontWeight: 600 }}>{studio.phoneDisplay}</a>.</p>
       </div>
     );
@@ -93,15 +93,6 @@ export default function NominationForm({ title, intro, feeText, rightsText }: { 
           <div className="field"><label htmlFor="yp">Phone / WhatsApp</label><input className="input" id="yp" name="phone" type="tel" autoComplete="tel" required {...err('phone')} /></div>
           <div className="field"><label htmlFor="ye">Email</label><input className="input" id="ye" name="email" type="email" autoComplete="email" required {...err('email')} /></div>
         </div>
-        <fieldset className="field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="legend">Who will sponsor the shoot?</legend>
-          <div className="types">
-            <label className="type-opt"><input type="radio" name="sponsor" value="me" defaultChecked />I will</label>
-            <label className="type-opt"><input type="radio" name="sponsor" value="family" />Another family member</label>
-            <label className="type-opt"><input type="radio" name="sponsor" value="unsure" />Not sure yet</label>
-          </div>
-          <span className="hint">{feeText ? `Sponsorship: ${feeText}.` : 'We’ll share the sponsorship fee and what it covers when we call you.'}</span>
-        </fieldset>
         <div className="field">
           <label htmlFor="yh">How did you hear about Preserving Legacy? <span className="opt">(optional)</span></label>
           <select className="input" id="yh" name="found_via" defaultValue="">

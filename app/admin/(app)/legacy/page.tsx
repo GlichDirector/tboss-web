@@ -6,7 +6,6 @@ import { requireArea } from '@/lib/team';
 
 export const dynamic = 'force-dynamic';
 
-const sponsorLabel: Record<string, string> = { me: 'Nominator will sponsor', family: 'Another family member will sponsor', unsure: 'Sponsor not sure yet' };
 
 export default async function LegacyNominations({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   await requireArea('clients');
@@ -43,7 +42,7 @@ export default async function LegacyNominations({ searchParams }: { searchParams
                 {n.outfit && <div><span className="a-hint">Outfit idea</span><div>{n.outfit}</div></div>}
                 {n.care_notes && <div><span className="a-hint">For their comfort</span><div>{n.care_notes}</div></div>}
                 <div><span className="a-hint">Nominated by</span><div>{n.nominator_name} ({n.relationship})<br /><span className="a-sub">{n.phone} · {n.email}</span></div></div>
-                <div><span className="a-hint">Sponsorship</span><div>{sponsorLabel[n.sponsor] || n.sponsor}{n.found_via ? <span className="a-sub"> · heard via {n.found_via}</span> : null}</div></div>
+                {n.found_via && <div><span className="a-hint">Heard about it via</span><div>{n.found_via}</div></div>}
               </div>
               <NominationTools id={n.id} status={n.status} notes={n.notes} statuses={LEGACY_STATUSES} phone={n.phone} email={n.email} elder={n.elder_name} />
             </article>
