@@ -29,6 +29,7 @@ export const nav = [
   { href: '/', label: 'Home' },
   { href: '/work', label: 'Work' },
   { href: '/journal', label: 'Journal' },
+  { href: '/preserving-legacy', label: 'Preserving Legacy' },
   { href: '/about', label: 'About' },
   { href: '/galleries', label: 'Client galleries' },
   { href: '/contact', label: 'Contact' },

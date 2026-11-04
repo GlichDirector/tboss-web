@@ -25,6 +25,6 @@ export async function savePageAction(page: keyof SiteContent, data: unknown) {
   const next = { ...all, [page]: { ...all[page], ...(data as object) } };
   await setSetting('site', next);
   revalidatePath('/', 'layout');
-  await pingSearchEngines([page === 'home' ? '/' : `/${page}`]);
+  await pingSearchEngines([page === 'home' ? '/' : page === 'legacy' ? '/preserving-legacy' : `/${page}`]);
   return { ok: true };
 }

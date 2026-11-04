@@ -70,7 +70,7 @@ export default async function Home() {
           <p className="eyebrow">Giving back</p>
           <h2 className="h-section" id="heritage-h">{h.heritageTitle}</h2>
           <p className="lede">{h.heritageText}</p>
-          <Link href="/work/heritage" className="link-line">Explore the project</Link>
+          <Link href="/preserving-legacy" className="link-line">Nominate an elder</Link>
         </div>
         <div className="media" style={{ flex: '1.4 1 520px' }}>
           <Pic src={h.heritageImage} alt="Heritage portrait by Tboss Photography" style={{ aspectRatio: '16 / 10' }} sizes="(max-width: 760px) 100vw, 60vw" />

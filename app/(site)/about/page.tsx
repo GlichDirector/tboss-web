@@ -66,7 +66,7 @@ export default async function AboutPage() {
             <p className="eyebrow">Giving back</p>
             <h2 className="h-section" id="heritage-h">The Heritage &amp; Legacy Project</h2>
             <p className="lede">{a.heritageText}</p>
-            <Link href="/work/heritage" className="link-line">See the heritage portraits</Link>
+            <Link href="/preserving-legacy" className="link-line">Preserving Legacy: nominate an elder</Link>
           </div>
         </div>
       </section>}

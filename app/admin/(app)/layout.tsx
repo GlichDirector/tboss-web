@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { newNominationCount } from '@/lib/legacy';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { dbHealth } from '@/lib/db';
@@ -21,7 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="a-shell">
       <aside className="a-side">
         <Link href="/admin" aria-label="Studio home"><img src="/brand/logo-brown.png" alt="Tboss Photography" width={64} height={44} /></Link>
-        <AdminNav newEnquiries={db.ok && staff.areas.has('clients') ? await countNewEnquiries() : 0} areas={[...staff.areas]} />
+        <AdminNav newEnquiries={db.ok && staff.areas.has('clients') ? await countNewEnquiries() : 0} newNominations={db.ok && staff.areas.has('clients') ? await newNominationCount() : 0} areas={[...staff.areas]} />
         <div className="a-me">
           <span>{user.name}</span>
           <span style={{ fontSize: 11 }}>{staff.owner ? 'Owner' : ROLES[staff.role].label}</span>

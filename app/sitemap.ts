@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       images: photos.filter((p) => p.tag === c.key).slice(0, 50).map((p) => abs(p.src)),
     })),
     { url: `${siteUrl}/journal`, lastModified: newestStory, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${siteUrl}/preserving-legacy`, changeFrequency: 'monthly', priority: 0.9 },
     { url: `${siteUrl}/about`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${siteUrl}/contact`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${siteUrl}/galleries`, changeFrequency: 'yearly', priority: 0.3 },

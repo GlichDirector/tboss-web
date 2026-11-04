@@ -251,6 +251,31 @@ const schema = [
     KEY by_cat (category, hidden),
     KEY by_story (story_id)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
+  // ---- Preserving Legacy nominations ----
+  `CREATE TABLE IF NOT EXISTS legacy_nominations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    status VARCHAR(20) NOT NULL DEFAULT 'new',
+    elder_name VARCHAR(160) NOT NULL,
+    known_as VARCHAR(120) NULL,
+    sex VARCHAR(10) NOT NULL,
+    age INT NOT NULL,
+    state VARCHAR(20) NOT NULL,
+    town VARCHAR(120) NOT NULL,
+    languages VARCHAR(160) NULL,
+    known_for VARCHAR(300) NULL,
+    story TEXT NOT NULL,
+    outfit VARCHAR(300) NULL,
+    care_notes VARCHAR(500) NULL,
+    nominator_name VARCHAR(160) NOT NULL,
+    relationship VARCHAR(80) NOT NULL,
+    phone VARCHAR(40) NOT NULL,
+    email VARCHAR(200) NOT NULL,
+    sponsor VARCHAR(20) NOT NULL DEFAULT 'me',
+    found_via VARCHAR(60) NULL,
+    notes TEXT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY by_status (status, created_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`,
   // ---- Website visits (Analytics). No cookies, no IP addresses stored. ----
   `CREATE TABLE IF NOT EXISTS page_views (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

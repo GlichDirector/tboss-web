@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 type Area = 'dashboard' | 'calendar' | 'clients' | 'galleries' | 'payments' | 'website' | 'settings';
-const groups: { title: string; items: { href: string; label: string; area: Area; badge?: 'enq' }[] }[] = [
+const groups: { title: string; items: { href: string; label: string; area: Area; badge?: 'enq' | 'leg' }[] }[] = [
   { title: 'Overview', items: [{ href: '/admin', label: 'Dashboard', area: 'dashboard' }, { href: '/admin/calendar', label: 'Calendar', area: 'calendar' }] },
   { title: 'Clients', items: [
     { href: '/admin/clients', label: 'Clients', area: 'clients' }, { href: '/admin/enquiries', label: 'Enquiries', area: 'clients', badge: 'enq' },
+    { href: '/admin/legacy', label: 'Legacy nominations', area: 'clients', badge: 'leg' },
     { href: '/admin/orders', label: 'Orders & bookings', area: 'clients' }, { href: '/admin/galleries', label: 'Client galleries', area: 'galleries' },
     { href: '/admin/payments', label: 'Payments & invoices', area: 'payments' },
   ] },
@@ -19,7 +20,7 @@ const groups: { title: string; items: { href: string; label: string; area: Area;
   { title: 'Studio', items: [{ href: '/admin/settings', label: 'Settings', area: 'settings' }, { href: '/admin/team', label: 'Team', area: 'settings' }] },
 ];
 
-export default function AdminNav({ newEnquiries, areas }: { newEnquiries: number; areas: Area[] }) {
+export default function AdminNav({ newEnquiries, newNominations = 0, areas }: { newEnquiries: number; newNominations?: number; areas: Area[] }) {
   const path = usePathname() || '/admin';
   const on = (href: string) => (href === '/admin' ? path === '/admin' : path.startsWith(href));
   return (
@@ -34,6 +35,7 @@ export default function AdminNav({ newEnquiries, areas }: { newEnquiries: number
               <Link key={i.href} href={i.href} aria-current={on(i.href) ? 'page' : undefined}>
                 {i.label}
                 {i.badge === 'enq' && newEnquiries > 0 && <span className="a-count">{newEnquiries}</span>}
+                {i.badge === 'leg' && newNominations > 0 && <span className="a-count">{newNominations}</span>}
               </Link>
             ))}
           </div>

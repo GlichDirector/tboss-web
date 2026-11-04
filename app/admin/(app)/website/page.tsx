@@ -3,7 +3,7 @@ import PageEditor from '@/components/admin/PageEditor';
 import { getContent } from '@/lib/siteContent';
 import { requireArea } from '@/lib/team';
 
-const pages = [['home', 'Home'], ['about', 'About'], ['contact', 'Contact'], ['work', 'Work']] as const;
+const pages = [['home', 'Home'], ['about', 'About'], ['contact', 'Contact'], ['work', 'Work'], ['legacy', 'Preserving Legacy']] as const;
 
 export default async function WebsitePage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   await requireArea('website');

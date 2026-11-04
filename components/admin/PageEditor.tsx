@@ -39,6 +39,35 @@ const SCHEMA: Record<string, { label: string; path: string; sections: Section[] 
     { title: 'Introduction', fields: [{ key: 'title', label: 'Heading', type: 'text' }, { key: 'intro', label: 'Introduction', type: 'textarea' }, { key: 'replyTime', label: 'How fast you reply (e.g. 24 hours)', type: 'text' }] },
     { title: 'Questions & answers', fields: [{ key: 'faqs', label: 'FAQs', type: 'faqs' }] },
   ] },
+  legacy: { label: 'Preserving Legacy', path: '/preserving-legacy', sections: [
+    { title: 'Nominations', fields: [
+      { key: 'open', label: 'Accepting nominations', type: 'toggle' },
+      { key: 'closedText', label: 'Message when nominations are closed', type: 'textarea' },
+      { key: 'feeText', label: 'Sponsorship fee shown on the page', type: 'text', help: 'e.g. ₦150,000 per elder. Leave empty to say you will share the fee when you call.' },
+    ] },
+    { title: 'Top of the page', fields: [
+      { key: 'heroEyebrow', label: 'Small line above the headline', type: 'text' },
+      { key: 'heroTitle', label: 'Headline', type: 'text' }, { key: 'heroTitleItalic', label: 'Headline, italic part', type: 'text' },
+      { key: 'heroText', label: 'Introduction', type: 'textarea' }, { key: 'ctaLabel', label: 'Button text', type: 'text' },
+      { key: 'heroImage', label: 'Photo', type: 'image' },
+    ] },
+    { title: 'Why we started', fields: [
+      { key: 'whyTitle', label: 'Heading', type: 'text' },
+      { key: 'whyText', label: 'Our story', type: 'textarea', help: 'Leave an empty line between paragraphs.' },
+      { key: 'whyQuote', label: 'A quote from Oluwatosin (optional)', type: 'textarea' },
+      { key: 'whyImage', label: 'Photo', type: 'image' },
+    ] },
+    { title: 'What the session includes', fields: [{ key: 'offerTitle', label: 'Heading', type: 'text' }, { key: 'offers', label: 'What’s included', type: 'cards', item: 'item' }] },
+    { title: 'Stories we have preserved', toggle: 'showStories', fields: [
+      { key: 'storiesTitle', label: 'Heading', type: 'text' }, { key: 'storiesText', label: 'Line under the heading', type: 'textarea', help: 'Shows your published Heritage Journal stories and Heritage photos from Work automatically.' },
+    ] },
+    { title: 'How it works', fields: [{ key: 'stepsTitle', label: 'Heading', type: 'text' }, { key: 'steps', label: 'Steps', type: 'cards', item: 'step' }] },
+    { title: 'Who can be nominated', fields: [{ key: 'whoTitle', label: 'Heading', type: 'text' }, { key: 'who', label: 'Conditions', type: 'cards', item: 'condition' }] },
+    { title: 'Use of photos & story', fields: [{ key: 'rightsTitle', label: 'Heading', type: 'text' }, { key: 'rightsText', label: 'Text (people agree to this on the form)', type: 'textarea' }] },
+    { title: 'Nomination form', fields: [{ key: 'formTitle', label: 'Heading', type: 'text' }, { key: 'formIntro', label: 'Introduction', type: 'textarea' }] },
+    { title: 'Questions & answers', fields: [{ key: 'faqs', label: 'FAQs', type: 'faqs' }] },
+    { title: 'Closing', fields: [{ key: 'closingTitle', label: 'Heading', type: 'text' }] },
+  ] },
   work: { label: 'Work', path: '/work', sections: [{ title: 'Introduction', fields: [{ key: 'intro', label: 'Line under “The work”', type: 'textarea', help: 'Photos on this page are the ones you post in Work. Hide or re-label them there.' }] }] },
 };
 
@@ -106,6 +135,7 @@ export default function PageEditor({ page, initial }: { page: string; initial: D
                 {sec.fields.map((f) => {
                   if (f.type === 'text') return <div className="field" key={f.key}><label htmlFor={`f-${f.key}`}>{f.label}</label><input id={`f-${f.key}`} className="input" value={String(data[f.key] ?? '')} onChange={(e) => set(f.key, e.target.value)} />{f.help && <span className="a-hint">{f.help}</span>}</div>;
                   if (f.type === 'textarea') return <div className="field" key={f.key}><label htmlFor={`f-${f.key}`}>{f.label}</label><textarea id={`f-${f.key}`} className="input" rows={3} value={String(data[f.key] ?? '')} onChange={(e) => set(f.key, e.target.value)} />{f.help && <span className="a-hint">{f.help}</span>}</div>;
+                  if (f.type === 'toggle') return <label key={f.key} className="pe-check"><input type="checkbox" checked={data[f.key] !== false} onChange={(e) => set(f.key, e.target.checked)} /> {f.label}</label>;
                   if (f.type === 'image') return <ImageField key={f.key} label={f.label} value={String(data[f.key] ?? '')} onChange={(v) => set(f.key, v)} size={f.size} />;
                   if (f.type === 'cards' || f.type === 'faqs') {
                     const isFaq = f.type === 'faqs';

@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 const RANGES = [7, 30, 90, 365];
 const PAGE_NAMES: Record<string, string> = {
   '/': 'Home', '/work': 'Work (all)', '/work/portraits': 'Work · Portraits', '/work/events': 'Work · Events', '/work/heritage': 'Work · Heritage',
-  '/journal': 'Journal', '/about': 'About', '/contact': 'Contact', '/privacy': 'Privacy',
+  '/journal': 'Journal', '/preserving-legacy': 'Preserving Legacy', '/about': 'About', '/contact': 'Contact', '/privacy': 'Privacy',
 };
 const fmt = (n: number) => n.toLocaleString('en-NG');
 const change = (now: number, before: number) => {
