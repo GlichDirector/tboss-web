@@ -594,3 +594,6 @@ textarea.input { padding: 12px 14px; min-height: 0; resize: vertical; }
 .lg-hero-in { padding-top: 150px; padding-bottom: 88px; }
 .lg-free { margin: 0; align-self: flex-start; padding: 10px 18px; border-radius: 999px; background: #1F1A16; color: #F3EEE6; font-weight: 600; }
 @media (max-width: 760px) { .lg-hero-in { padding-top: 120px; padding-bottom: 64px; } }
+/* Photos: while loading or if a photo can't be shown, show the soft background, never the alt text or a broken-image icon. */
+img.pic { color: transparent; background-color: #DCCFBD; }
+img.pic[data-failed] { font-size: 0; }

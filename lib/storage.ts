@@ -100,3 +100,9 @@ export async function getObject(key: string): Promise<Buffer> {
   const res = await s3().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
   return Buffer.from(await res.Body!.transformToByteArray());
 }
+
+// True when the error means the file really doesn't exist (as opposed to a passing hiccup).
+export const isMissing = (e: unknown) => {
+  const err = e as { name?: string; code?: string; $metadata?: { httpStatusCode?: number } };
+  return err?.name === 'NoSuchKey' || err?.code === 'ENOENT' || err?.$metadata?.httpStatusCode === 404;
+};
