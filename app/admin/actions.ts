@@ -8,7 +8,7 @@ import {
   createGallery, deleteGallery, deletePhoto, emailsOf, existingNames, getGallery, getPhoto, markReady, preparePhoto, updateGallery,
   type Folder, type Stage,
 } from '@/lib/galleries';
-import { sendTemplate } from '@/lib/mail';
+import { lastMailError, sendTemplate } from '@/lib/mail';
 import { photoKey, uploadUrl } from '@/lib/storage';
 import { formatDate } from '@/lib/content';
 
@@ -69,28 +69,45 @@ export async function deletePhotoAction(galleryId: number, photoId: number) {
   revalidatePath(`/admin/galleries/${galleryId}`);
 }
 
+// Emails every client on the gallery about its current stage. Reports failures in plain words.
+async function emailStage(g: NonNullable<Awaited<ReturnType<typeof getGallery>>>, stage: Stage) {
+  let sent = 0, failed = 0, reason = '';
+  const link = `${siteOrigin()}/g/${g.slug}?k=${g.access_key}`;
+  const vars = { first_name: g.client_name.split(' ')[0], session: g.title.toLowerCase() };
+  const rows: [string, string][] = stage === 'selection'
+    ? [
+        ...(g.selection_limit ? [['Included in your package', `${g.selection_limit} edited photos`] as [string, string]] : []),
+        ...(g.extra_price ? [['Each extra photo', g.extra_price] as [string, string]] : []),
+        ...(g.choose_by ? [['Please choose by', formatDate(g.choose_by)] as [string, string]] : []),
+      ]
+    : g.expires_on ? [['Available until', formatDate(g.expires_on)]] : [];
+  const to = emailsOf(g);
+  if (!to.length) reason = 'This gallery has no client email address. Add one in the gallery’s details, then send again.';
+  for (const t of to) {
+    if (await sendTemplate(stage === 'selection' ? 'choose' : 'ready', t, vars, { url: link, rows })) sent++;
+    else { failed++; reason = lastMailError(); }
+  }
+  return { sent, failed, reason, link };
+}
+
 // Moves the gallery to a new stage and, if asked, emails the client.
 export async function setStageAction(galleryId: number, stage: Stage, notify: boolean) {
   await admin();
   const g = await getGallery(galleryId);
   if (!g) return { error: 'Gallery not found.' };
   await updateGallery(galleryId, { stage });
-  let sent = 0;
-  if (notify && stage !== 'draft') {
-    const link = `${siteOrigin()}/g/${g.slug}?k=${g.access_key}`;
-    const vars = { first_name: g.client_name.split(' ')[0], session: g.title.toLowerCase() };
-    const rows: [string, string][] = stage === 'selection'
-      ? [
-          ...(g.selection_limit ? [['Included in your package', `${g.selection_limit} edited photos`] as [string, string]] : []),
-          ...(g.extra_price ? [['Each extra photo', g.extra_price] as [string, string]] : []),
-          ...(g.choose_by ? [['Please choose by', formatDate(g.choose_by)] as [string, string]] : []),
-        ]
-      : g.expires_on ? [['Available until', formatDate(g.expires_on)]] : [];
-    for (const to of emailsOf(g)) if (await sendTemplate(stage === 'selection' ? 'choose' : 'ready', to, vars, { url: link, rows })) sent++;
-  }
+  const mail = notify && stage !== 'draft' ? await emailStage(g, stage) : null;
   revalidatePath(`/admin/galleries/${galleryId}`);
   revalidatePath('/admin/galleries');
-  return { ok: true, sent };
+  return { ok: true, mail };
+}
+
+// Sends the "choose your photos" or "your photos are ready" email again.
+export async function resendStageEmailAction(galleryId: number) {
+  await admin();
+  const g = await getGallery(galleryId);
+  if (!g || g.stage === 'draft') return { error: 'Open the gallery for the client first.' };
+  return { ok: true, mail: await emailStage(g, g.stage) };
 }
 
 // ----- uploads -----

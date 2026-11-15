@@ -1,5 +1,7 @@
 'use server';
 
+import { lastMailError } from '@/lib/mail';
+
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { assertArea, type Area } from '@/lib/team';
@@ -108,17 +110,20 @@ export async function saveInvoiceAction(orderId: number, _p: R, f: FormData): Pr
   const items: Item[] = raw.map((i) => ({ description: i.description.trim().slice(0, 200), qty: Math.max(1, Number(i.qty) || 1), price: toNaira(i.price) })).filter((i) => i.description);
   if (!items.length) return { error: 'Add at least one line to the invoice.' };
   const send = s(f, 'send') === '1';
+  let invoiceMailed = true;
   if (send && !st.client.email) return { error: 'This client has no email address. Add one on their profile first.' };
   const due = s(f, 'due_date');
   const wasSent = Boolean(st.invoice?.sent_at);
   const inv = await saveInvoice(orderId, items, toNaira(s(f, 'discount')), toNaira(s(f, 'deposit')), isDate(due) ? due : null, s(f, 'note', 2000) || null, send);
   if (send) {
     const ok = await emailInvoice(st.client, inv, st.order.title, wasSent);
+    invoiceMailed = ok;
     await logEvent(orderId, `${wasSent ? 'Invoice resent' : 'Invoice sent'} (${inv.number} v${inv.version}, ${naira(inv.total)}) to ${st.client.email}${ok ? '' : ' — email failed'}`);
   } else {
     await logEvent(orderId, `Invoice saved (${inv.number} v${inv.version}, ${naira(inv.total)})`);
   }
   revalidatePath(`/admin/orders/${orderId}`);
+  if (send && !invoiceMailed) return { error: `Invoice saved, but the email didn’t go. ${lastMailError()} Meanwhile, open the invoice link and send it to the client on WhatsApp.` };
   return { ok: send ? `Invoice ${wasSent ? 'resent' : 'sent'} to ${st.client.email}.` : 'Invoice saved.' };
 }
 

@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { getTemplates, sendTemplate } from '@/lib/mail';
+import { getTemplates, sendTemplate, lastMailError } from '@/lib/mail';
 import type { Tpl, TplKey } from '@/lib/emailTemplates';
 import { DEFAULT_TEMPLATES } from '@/lib/emailTemplates';
 import { setSetting } from '@/lib/studio';
@@ -29,5 +29,5 @@ export async function resetTemplateAction(key: TplKey) {
 export async function sendTestAction(key: TplKey) {
   const me = await assertArea('website');
   const ok = await sendTemplate(key, me.user.email, SAMPLE, { url: siteOrigin(), rows: [['Example detail', 'Filled in automatically']] });
-  return ok ? { ok: `Test sent to ${me.user.email}. (Without RESEND_API_KEY it’s only recorded, not delivered.)` } : { error: 'Sending failed. Check the email settings.' };
+  return ok ? { ok: `Test sent to ${me.user.email}. Check your inbox (and spam folder).` } : { error: `The test didn’t send. ${lastMailError()}` };
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { deleteGalleryAction, deletePhotoAction, setCoverAction, setStageAction } from '@/app/admin/actions';
+import { deleteGalleryAction, deletePhotoAction, resendStageEmailAction, setCoverAction, setStageAction } from '@/app/admin/actions';
 
 export function CopyButton({ text, label = 'Copy', done = 'Copied' }: { text: string; label?: string; done?: string }) {
   const [ok, setOk] = useState(false);
@@ -15,10 +15,25 @@ export function CopyButton({ text, label = 'Copy', done = 'Copied' }: { text: st
 export function StageControls({ id, stage, hasUnedited, hasEdited }: { id: number; stage: 'draft' | 'selection' | 'finished'; hasUnedited: boolean; hasEdited: boolean }) {
   const [notify, setNotify] = useState(true);
   const [msg, setMsg] = useState('');
+  const [problem, setProblem] = useState<{ reason: string; link: string } | null>(null);
   const [busy, start] = useTransition();
+  type Mail = { sent: number; failed: number; reason: string; link: string } | null | undefined;
+  const report = (mail: Mail, done: string) => {
+    if (!mail) { setMsg(done); setProblem(null); return; }
+    const pre = done ? `${done} ` : '';
+    if (mail.sent && !mail.failed) { setMsg(`${pre}Email sent to ${mail.sent} client${mail.sent === 1 ? '' : 's'}.`); setProblem(null); return; }
+    setMsg(mail.sent ? `${pre}Email sent to ${mail.sent}, but ${mail.failed} didn’t go.` : `${pre}${done ? 'But the' : 'The'} email didn’t go.`);
+    setProblem({ reason: mail.reason || 'The email service didn’t accept it.', link: mail.link });
+  };
   const go = (s: 'draft' | 'selection' | 'finished') => start(async () => {
     const r = await setStageAction(id, s, notify);
-    setMsg(r && 'sent' in r && notify && s !== 'draft' ? `Done. Email sent to ${r.sent} client${r.sent === 1 ? '' : 's'}.` : 'Done.');
+    if ('error' in r && r.error) { setMsg(r.error); return; }
+    report('mail' in r ? r.mail : null, s === 'draft' ? 'Hidden from the client.' : 'Done.');
+  });
+  const resend = () => start(async () => {
+    const r = await resendStageEmailAction(id);
+    if ('error' in r && r.error) { setMsg(r.error); return; }
+    report('mail' in r ? r.mail : null, '');
   });
   return (
     <div className="a-card" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -30,10 +45,21 @@ export function StageControls({ id, stage, hasUnedited, hasEdited }: { id: numbe
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
         {stage !== 'selection' && <button type="button" className="btn btn-accent a-sm" disabled={busy || !hasUnedited} onClick={() => go('selection')}>{stage === 'finished' ? 'Reopen for choosing' : 'Open for client to choose'}</button>}
         {stage !== 'finished' && <button type="button" className="btn btn-dark a-sm" disabled={busy || !hasEdited} onClick={() => go('finished')}>Deliver edited photos</button>}
+        {stage !== 'draft' && <button type="button" className="btn btn-outline a-sm" disabled={busy} onClick={resend}>Email the client again</button>}
         {stage !== 'draft' && <button type="button" className="btn btn-outline a-sm" disabled={busy} onClick={() => go('draft')}>Hide from client</button>}
       </div>
       {!hasUnedited && stage === 'draft' && <span className="a-sub">Upload unedited photos first.</span>}
-      {msg && <span role="status" className="a-ok">{msg}</span>}
+      {msg && <span role="status" className={problem ? 'a-sub' : 'a-ok'} style={problem ? { fontWeight: 600 } : undefined}>{msg}</span>}
+      {problem && (
+        <div role="alert" className="alert" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <span><strong>Why:</strong> {problem.reason}</span>
+          <span>Meanwhile, send the client their gallery link yourself on WhatsApp:</span>
+          <span style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+            <code style={{ wordBreak: 'break-all', fontSize: 12 }}>{problem.link}</code>
+            <CopyButton text={problem.link} label="Copy link" done="Copied" />
+          </span>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { getUser, siteOrigin } from '@/lib/auth';
-import { brandedEmail, esc, sendMail } from '@/lib/mail';
+import { brandedEmail, esc, lastMailError, sendMail } from '@/lib/mail';
 import { acceptInvite, assertArea, inviteMember, memberByToken, removeMember, ROLES, setRole, type Role } from '@/lib/team';
 
 export type R = { error?: string; ok?: string };
@@ -26,7 +26,7 @@ export async function inviteAction(_p: R, f: FormData): Promise<R> {
     note: `Sign in with the Google account for ${esc(email)}. If you weren’t expecting this, ignore this email.`,
   }));
   revalidatePath('/admin/team');
-  return { ok: sent && process.env.RESEND_API_KEY ? `Invite emailed to ${email}. You can also copy their invite link from the list below.` : `Invite created. Email isn’t connected yet, so send them this link yourself (WhatsApp is fine): ${link}` };
+  return { ok: sent && process.env.RESEND_API_KEY ? `Invite emailed to ${email}. You can also copy their invite link from the list below.` : `Invite created, but the email didn’t go (${lastMailError()}). Send them this link yourself (WhatsApp is fine): ${link}` };
 }
 
 export async function roleAction(id: number, role: string) {

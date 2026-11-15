@@ -3,7 +3,7 @@
 import { studio } from './site';
 import { dbConfigured } from './db';
 import { saveEnquiry } from './studio';
-import { sendTemplate } from './mail';
+import { sendMail, sendTemplate } from './mail';
 
 export type FormState = { ok: boolean; error?: string; firstName?: string; email?: string; type?: string };
 
@@ -11,27 +11,7 @@ const clean = (v: FormDataEntryValue | null, max = 2000) => String(v ?? '').trim
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 const escapeHtml = (v: string) => v.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 
-async function sendEmail(to: string, subject: string, html: string, replyTo?: string) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key) {
-    // Email not connected yet: keep a record in the server log instead.
-    console.log(`[email not sent: RESEND_API_KEY missing] to=${to} subject="${subject}"`);
-    return true;
-  }
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.EMAIL_FROM || `${studio.name} <${studio.email}>`,
-      to: [to],
-      subject,
-      html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
-    }),
-  });
-  if (!res.ok) console.error('Resend error', res.status, await res.text());
-  return res.ok;
-}
+const sendEmail = sendMail;
 
 export async function sendEnquiry(_prev: FormState, form: FormData): Promise<FormState> {
   // Spam trap: real people never fill this hidden field.
